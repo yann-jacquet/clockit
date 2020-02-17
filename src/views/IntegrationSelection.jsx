@@ -1,39 +1,38 @@
-import React, { useState } from 'react'
-import PropTypes from 'prop-types'
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 // Hooks
-import useRedmineApi from '../hooks/Api/useRedmineApi'
+import useRedmineApi from '../hooks/Api/useRedmineApi';
 
-const IntegrationSelection = props => {
+const IntegrationSelection = (props) => {
   const [values, setValues] = useState({
     apiUrl: '',
     apiKey: '',
-  })
-  const [requestState, , error, { testFirstConnection }] = useRedmineApi()
+  });
+  const [requestState, , error, { testFirstConnection }] = useRedmineApi();
 
   const handleChange = (e) => setValues(
-    { ...values, [e.target.name]: e.target.value}
-  )
+    { ...values, [e.target.name]: e.target.value },
+  );
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    testFirstConnection(values.apiUrl, values.apiKey)
-  }
+    testFirstConnection(values.apiUrl, values.apiKey);
+  };
   return (
     <div>
       <form>
         {error
           ? <span>{error}</span>
-          : null
-        }
-        <input 
+          : null}
+        <input
           type="text"
           placeholder="API URL"
-          name="apiUrl" 
+          name="apiUrl"
           value={values.apiUrl}
           onChange={handleChange}
         />
-        <input 
-          type="text" 
+        <input
+          type="text"
           name="apiKey"
           placeholder="API Key"
           value={values.apiKey}
@@ -44,11 +43,11 @@ const IntegrationSelection = props => {
         </button>
       </form>
     </div>
-  )
-}
+  );
+};
 
 IntegrationSelection.propTypes = {
 
-}
+};
 
-export default IntegrationSelection
+export default IntegrationSelection;
