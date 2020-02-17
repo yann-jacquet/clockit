@@ -1,29 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
+// Utils
+import formatTimestamp from '../../../utils/formatTimestamp';
+
 const Timer = ({ handleStart, handleStop, disabled }) => {
   const [startTimestamp, setStartTimestamp] = useState(0);
   const [timerString, setTimerString] = useState('');
-
-  const timeDifference = () => {
-    const duration = Date.now() - startTimestamp;
-    const seconds = Math.floor((duration / 1000) % 60);
-    const minutes = Math.floor((duration / (1000 * 60)) % 60);
-    const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-    const formated = {
-      hours: (hours < 10) ? `0${hours}` : hours,
-      minutes: (minutes < 10) ? `0${minutes}` : minutes,
-      seconds: (seconds < 10) ? `0${seconds}` : seconds,
-    };
-
-    return `${formated.hours}:${formated.minutes}:${formated.seconds}`;
-  };
 
   useEffect(() => {
     let interval = null;
     if (startTimestamp > 0) {
       interval = setInterval(() => {
-        setTimerString(timeDifference());
+        const timeDifference = Date.now() - startTimestamp;
+        setTimerString(formatTimestamp(timeDifference));
       }, 1000);
     }
     return () => {
@@ -36,10 +26,17 @@ const Timer = ({ handleStart, handleStop, disabled }) => {
     if (handleStart) handleStart();
   };
 
-  const handleStopClick = () => handleStop({
-    start: startTimestamp,
-    end: Date.now(),
-  });
+  const handleStopClick = () => {
+    setStartTimestamp(0);
+    setTimerString('');
+
+    if (handleStop) {
+      handleStop({
+        start: startTimestamp,
+        end: Date.now(),
+      });
+    }
+  };
 
   return (
     <div>
@@ -62,16 +59,22 @@ const Timer = ({ handleStart, handleStop, disabled }) => {
             Stop
           </button>
         )}
-      <span>{timerString || null}</span>
+      {timerString
+        ? <span>{timerString}</span>
+        : null}
     </div>
   );
 };
 
 Timer.propTypes = {
+  handleStart: PropTypes.func,
+  handleStop: PropTypes.func,
   disabled: PropTypes.bool,
 };
 
 Timer.defaultProps = {
+  handleStart: undefined,
+  handleStop: undefined,
   disabled: false,
 };
 

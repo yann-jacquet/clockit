@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Components
 import TimerCard from '../components/organisms/TimerCard';
@@ -8,7 +8,12 @@ import Timer from '../components/molecules/Timer';
 import useRedmineApi from '../hooks/Api/useRedmineApi';
 
 const TasksList = () => {
+  const [taskToTime, setTaskToTime] = useState(null);
   const [taskRequestState, taskPayload, taskError, { getTask }] = useRedmineApi();
+
+  useEffect(() => {
+    if (taskPayload) setTaskToTime(taskPayload.issues[0]);
+  }, [taskPayload]);
 
   const handleTaskIdBlur = (e) => (e.target.value ? getTask(e.target.value) : null);
 
@@ -16,9 +21,11 @@ const TasksList = () => {
     <div>
       <TimerCard
         handleTaskIdBlur={handleTaskIdBlur}
-        task={taskPayload ? taskPayload.issues[0] : null}
+        task={taskToTime}
+        disabled={taskRequestState === 'loading'}
       >
         <Timer
+          handleStop={(res) => console.log('stop timer : ', res)}
           disabled={!taskPayload}
         />
       </TimerCard>

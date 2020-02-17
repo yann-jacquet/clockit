@@ -1,9 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const TimerCard = ({ handleTaskIdBlur, task, children }) => (
+const TimerCard = ({
+  handleTaskIdBlur, task, disabled, children,
+}) => (
   <div>
-    <input type="text" placeholder="Task id" name="taskId" onBlur={handleTaskIdBlur} />
+    <input
+      type="text"
+      placeholder="Task id"
+      name="taskId"
+      onBlur={handleTaskIdBlur}
+      disabled={disabled}
+    />
     {task
       ? (
         <div>
@@ -22,6 +30,11 @@ const TimerCard = ({ handleTaskIdBlur, task, children }) => (
 TimerCard.propTypes = {
   handleTaskIdBlur: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
+  disabled: PropTypes.bool,
+};
+
+TimerCard.defaultProps = {
+  disabled: false,
 };
 
 export default TimerCard;
