@@ -1,5 +1,3 @@
-import  {useEffect} from 'react';
-
 const electron = window.require('electron');
 const path = electron.remote.require('path');
 const fs = electron.remote.require('fs');

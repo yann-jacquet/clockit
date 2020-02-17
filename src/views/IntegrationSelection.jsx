@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import axios from 'axios'
 
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi'
@@ -10,7 +9,7 @@ const IntegrationSelection = props => {
     apiUrl: '',
     apiKey: '',
   })
-  const [requestState, payload, error, { testFirstConnection }] = useRedmineApi()
+  const [requestState, , error, { testFirstConnection }] = useRedmineApi()
 
   const handleChange = (e) => setValues(
     { ...values, [e.target.name]: e.target.value}
@@ -22,6 +21,10 @@ const IntegrationSelection = props => {
   return (
     <div>
       <form>
+        {error
+          ? <span>{error}</span>
+          : null
+        }
         <input 
           type="text"
           placeholder="API URL"
@@ -36,7 +39,7 @@ const IntegrationSelection = props => {
           value={values.apiKey}
           onChange={handleChange}
         />
-        <button type="button" onClick={handleOnSubmit}>
+        <button type="button" onClick={handleOnSubmit} disabled={requestState === 'loading'}>
           Valider
         </button>
       </form>
