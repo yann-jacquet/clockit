@@ -4,7 +4,7 @@ import useFileSystem from '../useFileSystem';
 
 const useRedmineApi = () => {
   const [requestState, payload, error, request] = useApi();
-  const [, setParams] = useFileSystem({
+  const [getParams, setParams] = useFileSystem({
     defaults: {
       windowBounds: { width: 800, height: 600 },
       appConfig: {
@@ -14,6 +14,8 @@ const useRedmineApi = () => {
       },
     },
   });
+
+  const apiParams = getParams('appConfig');
 
   // Before saving the params, we have to test the connection
   // information given by the user. If the call succeed only
@@ -39,6 +41,13 @@ const useRedmineApi = () => {
     `/issues.json?assigned_to_id=${userId || 'me'}`,
   );
 
+  const getTask = (taskId) => request(
+    'GET',
+    `${apiParams.apiUrl}/issues.json?issue_id=${taskId}`,
+    null,
+    { axiosOptions: { headers: { 'X-Redmine-API-Key': apiParams.apiKey } } },
+  );
+
   return [
     requestState,
     payload,
@@ -46,6 +55,7 @@ const useRedmineApi = () => {
     {
       testFirstConnection,
       getIssuesAssignedTo,
+      getTask,
     },
   ];
 };

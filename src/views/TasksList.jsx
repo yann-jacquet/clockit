@@ -1,14 +1,29 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-const TasksList = (props) => (
-  <div>
-    Tasks list view
-  </div>
-);
+// Components
+import TimerCard from '../components/organisms/TimerCard';
+import Timer from '../components/molecules/Timer';
 
-TasksList.propTypes = {
+// Hooks
+import useRedmineApi from '../hooks/Api/useRedmineApi';
 
+const TasksList = () => {
+  const [taskRequestState, taskPayload, taskError, { getTask }] = useRedmineApi();
+
+  const handleTaskIdBlur = (e) => (e.target.value ? getTask(e.target.value) : null);
+
+  return (
+    <div>
+      <TimerCard
+        handleTaskIdBlur={handleTaskIdBlur}
+        task={taskPayload ? taskPayload.issues[0] : null}
+      >
+        <Timer
+          disabled={!taskPayload}
+        />
+      </TimerCard>
+    </div>
+  );
 };
 
 export default TasksList;
