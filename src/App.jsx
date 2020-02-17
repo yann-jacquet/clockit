@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react';
+/* eslint-disable react/jsx-props-no-spreading */
+import React from 'react';
 import {
   MemoryRouter,
   Switch,
   Route,
   Redirect,
-} from "react-router-dom";
-import routes from "./views/routes";
+} from 'react-router-dom';
+import routes from './views/routes';
 import './App.css';
 
 // hooks
-import useFileSystem from './hooks/useFileSystem'
+import useFileSystem from './hooks/useFileSystem';
 
 function App() {
   const [getParams] = useFileSystem();
@@ -18,12 +19,11 @@ function App() {
   return (
     <MemoryRouter>
       <Switch>
-        { routes.map(route => <Route key={route.path} {...route}/>) }
+        { routes.map((route) => <Route key={route.path} {...route} />) }
       </Switch>
       {userParams
         ? null
-        : <Redirect to ="/integration-selection" />
-      }
+        : <Redirect to="/integration-selection" />}
     </MemoryRouter>
   );
 }

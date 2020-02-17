@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi';
 
-const IntegrationSelection = (props) => {
+const IntegrationSelection = () => {
   const [values, setValues] = useState({
     apiUrl: '',
     apiKey: '',
@@ -44,10 +43,6 @@ const IntegrationSelection = (props) => {
       </form>
     </div>
   );
-};
-
-IntegrationSelection.propTypes = {
-
 };
 
 export default IntegrationSelection;

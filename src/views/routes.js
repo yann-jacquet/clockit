@@ -1,5 +1,5 @@
-import IntegrationSelection from './IntegrationSelection'
-import TasksList from './TasksList'
+import IntegrationSelection from './IntegrationSelection';
+import TasksList from './TasksList';
 
 export default [
   {
@@ -11,5 +11,5 @@ export default [
     path: '/integration-selection',
     component: IntegrationSelection,
     exact: true,
-  }
-]
+  },
+];
