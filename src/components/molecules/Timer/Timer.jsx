@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 // Utils
 import formatTimestamp from '../../../utils/formatTimestamp';
 
-const Timer = ({ handleStart, handleStop, disabled }) => {
-  const [startTimestamp, setStartTimestamp] = useState(0);
+const Timer = ({
+  handleStart, handleStop, startTimestamp, disabled,
+}) => {
   const [timerString, setTimerString] = useState('');
 
   useEffect(() => {
@@ -15,28 +16,11 @@ const Timer = ({ handleStart, handleStop, disabled }) => {
         const timeDifference = Date.now() - startTimestamp;
         setTimerString(formatTimestamp(timeDifference));
       }, 1000);
-    }
+    } else setTimerString('');
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [startTimestamp]);
-
-  const handleStartClick = () => {
-    setStartTimestamp(Date.now());
-    if (handleStart) handleStart();
-  };
-
-  const handleStopClick = () => {
-    setStartTimestamp(0);
-    setTimerString('');
-
-    if (handleStop) {
-      handleStop({
-        start: startTimestamp,
-        end: Date.now(),
-      });
-    }
-  };
 
   return (
     <div>
@@ -44,7 +28,7 @@ const Timer = ({ handleStart, handleStop, disabled }) => {
         ? (
           <button
             type="button"
-            onClick={handleStartClick}
+            onClick={handleStart}
             disabled={disabled}
           >
           Start
@@ -53,7 +37,7 @@ const Timer = ({ handleStart, handleStop, disabled }) => {
         : (
           <button
             type="button"
-            onClick={handleStopClick}
+            onClick={handleStop}
             disabled={disabled}
           >
             Stop

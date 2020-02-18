@@ -4,7 +4,7 @@ const fs = electron.remote.require('fs');
 
 const useFileSystem = (opts) => {
   const userDataPath = (electron.app || electron.remote.app).getPath('userData');
-  const userPath = path.join(userDataPath, 'user-preferences.json');
+  const userPath = path.join(userDataPath, `${opts.src}.json`);
 
   const parseDataFile = (filePath) => {
     try {
@@ -30,6 +30,7 @@ const useFileSystem = (opts) => {
       const updatedDefault = { ...opts.defaults, [key]: val };
       fs.writeFileSync(userPath, JSON.stringify(updatedDefault));
     } else {
+      // eslint-disable-next-line no-console
       console.error('useFileSystem: couldn\'t set params, try to define a default first');
     }
   };

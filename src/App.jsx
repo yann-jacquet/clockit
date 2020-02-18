@@ -13,7 +13,7 @@ import './App.css';
 import useFileSystem from './hooks/useFileSystem';
 
 function App() {
-  const [getParams] = useFileSystem();
+  const [getParams] = useFileSystem({ src: 'user-preferences' });
   const userParams = getParams('appConfig');
 
   return (

@@ -5,6 +5,7 @@ import useFileSystem from '../useFileSystem';
 const useRedmineApi = () => {
   const [requestState, payload, error, request] = useApi();
   const [getParams, setParams] = useFileSystem({
+    src: 'user-preferences',
     defaults: {
       windowBounds: { width: 800, height: 600 },
       appConfig: {
