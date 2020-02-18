@@ -32,11 +32,15 @@ const TimerCard = ({
 TimerCard.propTypes = {
   handleTaskIdBlur: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
+  task: PropTypes.shape({
+
+  }),
   disabled: PropTypes.bool,
   error: PropTypes.string,
 };
 
 TimerCard.defaultProps = {
+  task: null,
   disabled: false,
   error: null,
 };

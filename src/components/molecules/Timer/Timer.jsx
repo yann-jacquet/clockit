@@ -51,14 +51,13 @@ const Timer = ({
 };
 
 Timer.propTypes = {
-  handleStart: PropTypes.func,
-  handleStop: PropTypes.func,
+  startTimestamp: PropTypes.number.isRequired,
+  handleStart: PropTypes.func.isRequired,
+  handleStop: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
 };
 
 Timer.defaultProps = {
-  handleStart: undefined,
-  handleStop: undefined,
   disabled: false,
 };
 
