@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 
 // Components
 import TimerCard from '../components/organisms/TimerCard';
@@ -7,6 +8,10 @@ import Timer from '../components/molecules/Timer';
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi';
 import useFileSystem from '../hooks/useFileSystem';
+
+// Utils
+import formatTimestamp from '../utils/formatTimestamp';
+import sortTasksByDate from '../utils/sortTasksByDate';
 
 const TasksList = () => {
   const [taskToTime, setTaskToTime] = useState(null);
@@ -23,6 +28,7 @@ const TasksList = () => {
     },
   });
   const [taskRequestState, taskPayload, taskError, { getTask }] = useRedmineApi();
+  const [timeEntryRequestState, , timeEntryError, { postTimeEntry }] = useRedmineApi();
   const pendingTask = getUnsyncTasks('pending');
   const unsyncTasks = getUnsyncTasks('unsyncTasks');
 
@@ -56,10 +62,20 @@ const TasksList = () => {
     setTaskToTime(null);
     setStartTimestamp(0);
     setUnsyncTasks('pending', { taskId: null, startTimestamp: null });
-    // TODO: save tracked task in unsync array
-    console.log({
-      start: startTimestamp,
-      end: Date.now(),
+    // Save tracked task in unsync array
+    const newUnsyncTasks = unsyncTasks.concat([{
+      ...taskToTime,
+      timeTracking: {
+        startTimestamp,
+        endTimestamp: Date.now(),
+      },
+    }]);
+    setUnsyncTasks('unsyncTasks', newUnsyncTasks);
+  };
+
+  const handleOnSyncClick = () => {
+    unsyncTasks.forEach((taskToSync) => {
+      postTimeEntry(taskToSync);
     });
   };
 
@@ -82,6 +98,32 @@ const TasksList = () => {
           startTimestamp={startTimestamp}
         />
       </TimerCard>
+
+      {unsyncTasks.length > 0
+        ? (
+          <ul>
+            {Object.keys(sortTasksByDate(unsyncTasks)).map((tasksDay) => (
+              <li key={tasksDay}>
+                <span>{format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}</span>
+                <ul>
+                  {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
+                    <li key={unsyncTask.timeTracking.endTimestamp}>
+                      <span>{`#${unsyncTask.id}`}</span>
+                      <span>{unsyncTask.subject}</span>
+                      <span>
+                        {formatTimestamp(
+                          unsyncTask.timeTracking.endTimestamp - unsyncTask.timeTracking.startTimestamp,
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        )
+        : <div>Start your day with a task</div>}
+      <button type="button" onClick={handleOnSyncClick}>Sync my tasks</button>
     </div>
   );
 };

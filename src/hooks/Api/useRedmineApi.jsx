@@ -2,6 +2,9 @@
 import useApi from './useApi';
 import useFileSystem from '../useFileSystem';
 
+// Utils
+import msToHours from '../../utils/msToHours';
+
 const useRedmineApi = () => {
   const [requestState, payload, error, request] = useApi();
   const [getParams, setParams] = useFileSystem({
@@ -49,6 +52,15 @@ const useRedmineApi = () => {
     { axiosOptions: { headers: { 'X-Redmine-API-Key': apiParams.apiKey } } },
   );
 
+  const postTimeEntry = (task) => {
+    const newTimeEntry = {
+      issue_id: task.id,
+      spent_on: task.timeTracking.startTimestamp,
+      hours: msToHours(task.timeTracking.endTimestamp - task.timeTracking.startTimestamp),
+    };
+    console.log(newTimeEntry);
+  };
+
   return [
     requestState,
     payload,
@@ -57,6 +69,7 @@ const useRedmineApi = () => {
       testFirstConnection,
       getIssuesAssignedTo,
       getTask,
+      postTimeEntry,
     },
   ];
 };
