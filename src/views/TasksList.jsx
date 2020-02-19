@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { format, getTime, parseISO } from 'date-fns';
+import {
+  format, getTime, parseISO, isAfter,
+} from 'date-fns';
 
 // Components
 import TimerCard from '../components/organisms/TimerCard';
 import Timer from '../components/molecules/Timer';
+import TimeDatesForm from '../components/forms/TimeDatesForm';
 
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi';
@@ -17,6 +20,7 @@ const TasksList = () => {
   const [taskToTime, setTaskToTime] = useState(null);
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
   const [startTimestamp, setStartTimestamp] = useState(0);
+  const [unsyncTasks, setUnsyncTasksState] = useState(0);
   const [getUnsyncTasks, setUnsyncTasks] = useFileSystem({
     src: 'unsync-tasks',
     defaults: {
@@ -30,9 +34,10 @@ const TasksList = () => {
   const [taskRequestState, taskPayload, taskError, { getTask }] = useRedmineApi();
   const [timeEntryRequestState, , timeEntryError, { postTimeEntry }] = useRedmineApi();
   const pendingTask = getUnsyncTasks('pending');
-  const unsyncTasks = getUnsyncTasks('unsyncTasks');
 
   useEffect(() => {
+    setUnsyncTasksState(getUnsyncTasks('unsyncTasks'));
+
     if (pendingTask && pendingTask.taskId) {
       setHasTimerStarted(true);
       setStartTimestamp(pendingTask.startTimestamp);
@@ -80,21 +85,32 @@ const TasksList = () => {
     });
   };
 
-  const handleTimestampChange = (side, taskTimmerId, newTimestamp) => {
+  const handleTimestampChange = (e) => {
+    const splitedInputName = e.target.name.split('-');
+    const taskTimmerId = splitedInputName[0];
+    const side = splitedInputName[1];
+    const newTimestamp = getTime(parseISO(e.target.value));
+
     const updatedUnsyncTasks = unsyncTasks.map((unsyncTask) => {
-      if (unsyncTask.timeTracking.id === taskTimmerId) {
+      const isEndAfterStart = isAfter(
+        side === 'endTimestamp' ? newTimestamp : unsyncTask.timeTracking.endTimestamp,
+        side === 'startTimestamp' ? newTimestamp : unsyncTask.timeTracking.startTimestamp,
+      );
+      if ((unsyncTask.timeTracking.id === taskTimmerId) && isEndAfterStart) {
         return {
           ...unsyncTask,
           timeTracking: {
             ...unsyncTask.timeTracking,
-            [side]: getTime(parseISO(newTimestamp)),
+            [side]: newTimestamp,
           },
         };
       }
       return unsyncTask;
     });
 
+    // Update on local and on state to refresh the view
     setUnsyncTasks('unsyncTasks', updatedUnsyncTasks);
+    setUnsyncTasksState(updatedUnsyncTasks);
   };
 
   return (
@@ -125,27 +141,17 @@ const TasksList = () => {
                 <span>{format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}</span>
                 <ul>
                   {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
-                    <li key={unsyncTask.timeTracking.endTimestamp}>
+                    <li key={unsyncTask.timeTracking.id}>
                       <span>{`#${unsyncTask.id}`}</span>
                       <span>{unsyncTask.subject}</span>
                       <span>{unsyncTask.project.name}</span>
-                      <input
-                        type="datetime-local"
-                        defaultValue={format(new Date(unsyncTask.timeTracking.startTimestamp), "yyyy-MM-dd'T'HH:mm")}
-                        onBlur={(e) => handleTimestampChange(
-                          'startTimestamp',
-                          unsyncTask.timeTracking.id,
-                          e.target.value,
-                        )}
-                      />
-                      <input
-                        type="datetime-local"
-                        defaultValue={format(new Date(unsyncTask.timeTracking.endTimestamp), "yyyy-MM-dd'T'HH:mm")}
-                        onBlur={(e) => handleTimestampChange(
-                          'endTimestamp',
-                          unsyncTask.timeTracking.id,
-                          e.target.value,
-                        )}
+                      <TimeDatesForm
+                        initValues={{
+                          startTimestamp: format(new Date(unsyncTask.timeTracking.startTimestamp), "yyyy-MM-dd'T'HH:mm"),
+                          endTimestamp: format(new Date(unsyncTask.timeTracking.endTimestamp), "yyyy-MM-dd'T'HH:mm"),
+                        }}
+                        handleBlur={handleTimestampChange}
+                        timeTrackingId={unsyncTask.timeTracking.id}
                       />
                       <span>
                         {formatTimestamp(
