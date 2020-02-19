@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';
+import { format, getTime, parseISO } from 'date-fns';
 
 // Components
 import TimerCard from '../components/organisms/TimerCard';
@@ -66,6 +66,7 @@ const TasksList = () => {
     const newUnsyncTasks = unsyncTasks.concat([{
       ...taskToTime,
       timeTracking: {
+        id: Math.random().toString(36).substring(2, 15) + Math.random(),
         startTimestamp,
         endTimestamp: Date.now(),
       },
@@ -77,6 +78,23 @@ const TasksList = () => {
     unsyncTasks.forEach((taskToSync) => {
       postTimeEntry(taskToSync);
     });
+  };
+
+  const handleTimestampChange = (side, taskTimmerId, newTimestamp) => {
+    const updatedUnsyncTasks = unsyncTasks.map((unsyncTask) => {
+      if (unsyncTask.timeTracking.id === taskTimmerId) {
+        return {
+          ...unsyncTask,
+          timeTracking: {
+            ...unsyncTask.timeTracking,
+            [side]: getTime(parseISO(newTimestamp)),
+          },
+        };
+      }
+      return unsyncTask;
+    });
+
+    setUnsyncTasks('unsyncTasks', updatedUnsyncTasks);
   };
 
   return (
@@ -99,7 +117,7 @@ const TasksList = () => {
         />
       </TimerCard>
 
-      {unsyncTasks.length > 0
+      {unsyncTasks && unsyncTasks.length > 0
         ? (
           <ul>
             {Object.keys(sortTasksByDate(unsyncTasks)).map((tasksDay) => (
@@ -110,6 +128,25 @@ const TasksList = () => {
                     <li key={unsyncTask.timeTracking.endTimestamp}>
                       <span>{`#${unsyncTask.id}`}</span>
                       <span>{unsyncTask.subject}</span>
+                      <span>{unsyncTask.project.name}</span>
+                      <input
+                        type="datetime-local"
+                        defaultValue={format(new Date(unsyncTask.timeTracking.startTimestamp), "yyyy-MM-dd'T'HH:mm")}
+                        onBlur={(e) => handleTimestampChange(
+                          'startTimestamp',
+                          unsyncTask.timeTracking.id,
+                          e.target.value,
+                        )}
+                      />
+                      <input
+                        type="datetime-local"
+                        defaultValue={format(new Date(unsyncTask.timeTracking.endTimestamp), "yyyy-MM-dd'T'HH:mm")}
+                        onBlur={(e) => handleTimestampChange(
+                          'endTimestamp',
+                          unsyncTask.timeTracking.id,
+                          e.target.value,
+                        )}
+                      />
                       <span>
                         {formatTimestamp(
                           unsyncTask.timeTracking.endTimestamp - unsyncTask.timeTracking.startTimestamp,
