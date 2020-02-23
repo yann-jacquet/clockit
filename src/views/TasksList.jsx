@@ -7,6 +7,8 @@ import {
 import TimerCard from '../components/organisms/TimerCard';
 import Timer from '../components/molecules/Timer';
 import TimeDatesForm from '../components/forms/TimeDatesForm';
+import TimedTaskCard from '../components/molecules/TimedTaskCard';
+import DayCard from '../components/organisms/DayCard';
 
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi';
@@ -135,38 +137,55 @@ const TasksList = () => {
 
       {unsyncTasks && unsyncTasks.length > 0
         ? (
-          <ul>
-            {Object.keys(sortTasksByDate(unsyncTasks)).map((tasksDay) => (
-              <li key={tasksDay}>
-                <span>{format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}</span>
-                <ul>
-                  {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
-                    <li key={unsyncTask.timeTracking.id}>
-                      <span>{`#${unsyncTask.id}`}</span>
-                      <span>{unsyncTask.subject}</span>
-                      <span>{unsyncTask.project.name}</span>
-                      <TimeDatesForm
-                        initValues={{
-                          startTimestamp: format(new Date(unsyncTask.timeTracking.startTimestamp), "yyyy-MM-dd'T'HH:mm"),
-                          endTimestamp: format(new Date(unsyncTask.timeTracking.endTimestamp), "yyyy-MM-dd'T'HH:mm"),
-                        }}
-                        handleBlur={handleTimestampChange}
-                        timeTrackingId={unsyncTask.timeTracking.id}
-                      />
-                      <span>
-                        {formatTimestamp(
-                          unsyncTask.timeTracking.endTimestamp - unsyncTask.timeTracking.startTimestamp,
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
+          <div className="px-2">
+
+            <ul>
+              {Object.keys(sortTasksByDate(unsyncTasks)).map((tasksDay) => (
+                <DayCard
+                  key={tasksDay}
+                  title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
+                >
+                  <ul>
+                    {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
+                      <TimedTaskCard key={unsyncTask.timeTracking.id}>
+                        <div className="flex flex-col">
+                          <span className="font-bold">
+                            {`#${unsyncTask.id} - ${unsyncTask.subject}`}
+                          </span>
+                          <span className="italic text-sm">{unsyncTask.project.name}</span>
+                          <TimeDatesForm
+                            initValues={{
+                              startTimestamp: format(new Date(unsyncTask.timeTracking.startTimestamp), "yyyy-MM-dd'T'HH:mm"),
+                              endTimestamp: format(new Date(unsyncTask.timeTracking.endTimestamp), "yyyy-MM-dd'T'HH:mm"),
+                            }}
+                            handleBlur={handleTimestampChange}
+                            timeTrackingId={unsyncTask.timeTracking.id}
+                          />
+                        </div>
+                        <span className="text-lg">
+                          {formatTimestamp(
+                            unsyncTask.timeTracking.endTimestamp - unsyncTask.timeTracking.startTimestamp,
+                          )}
+                        </span>
+                      </TimedTaskCard>
+                    ))}
+                  </ul>
+                </DayCard>
+              ))}
+            </ul>
+
+            <button
+              className={`
+          mt-2 w-full bg-teal-300 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-teal-500 hover:border-teal-300
+          `}
+              type="button"
+              onClick={handleOnSyncClick}
+            >
+              {`Sync ${unsyncTasks.length} tasks`}
+            </button>
+          </div>
         )
         : <div>Start your day with a task</div>}
-      <button type="button" onClick={handleOnSyncClick}>Sync my tasks</button>
     </div>
   );
 };

@@ -1,9 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-// Components
-import Message from '../../atoms/Message';
-
 const TimerCard = ({
   handleTaskIdBlur, task, disabled, error, children,
 }) => (
