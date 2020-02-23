@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+// Components
+import Message from '../../atoms/Message';
+
 const TimerCard = ({
   handleTaskIdBlur, task, disabled, error, children,
 }) => (
@@ -18,6 +21,9 @@ const TimerCard = ({
           defaultValue={task ? task.id : undefined}
         />
       </label>
+      {error
+        ? <span className="text-red-500">{error}</span>
+        : null}
       {task
         ? (
           <>
@@ -28,7 +34,6 @@ const TimerCard = ({
         )
         : null}
     </div>
-    {error ? <span>{error}</span> : null}
     <div>
       {children}
     </div>
