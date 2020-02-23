@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+
 // Hooks
 import useApi from './useApi';
 import useFileSystem from '../useFileSystem';
@@ -53,25 +55,23 @@ const useRedmineApi = () => {
   );
 
   const postTimeEntry = (task) => {
-    const newTimeEntry = {
-      time_entry: {
-        issue_id: task.id,
-        spent_on: task.timeTracking.startTimestamp,
-        hours: msToHours(task.timeTracking.endTimestamp - task.timeTracking.startTimestamp),
-        comments: '',
-      },
-    };
-    console.log(newTimeEntry);
+    const xmlBodyStr = `<time_entry>
+              <issue_id>${task.id}</issue_id>
+              <spent_on>${format(task.timeTracking.startTimestamp, 'yyyy-MM-dd')}</spent_on>
+              <hours>${msToHours(task.timeTracking.endTimestamp - task.timeTracking.startTimestamp)}</hours>
+              <activity_id>9</activity_id>
+              <comments></comments>
+           </time_entry>`;
 
-    request(
+    return request(
       'POST',
-      `${apiParams.apiUrl}/time_entries.json`,
-      newTimeEntry,
+      `${apiParams.apiUrl}/time_entries.xml`,
+      xmlBodyStr,
       {
         axiosOptions: {
           headers: {
             'X-Redmine-API-Key': apiParams.apiKey,
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/xml',
           },
         },
       },

@@ -85,9 +85,24 @@ const TasksList = () => {
   };
 
   const handleOnSyncClick = () => {
+    const requests = [];
+    const succeededSyncIds = [];
     unsyncTasks.forEach((taskToSync) => {
-      postTimeEntry(taskToSync);
+      requests.push(
+        postTimeEntry(taskToSync)
+          .then((res) => ((res && res.status === 201) && succeededSyncIds.push(taskToSync.id))),
+      );
     });
+
+    Promise.all(requests)
+      .then(() => {
+        // Clean sync tasks from array
+        const stillWaitingToSync = unsyncTasks
+          .filter((task) => !succeededSyncIds.includes(task.id));
+
+        setUnsyncTasksState(stillWaitingToSync);
+        setUnsyncTasks('unsyncTasks', stillWaitingToSync);
+      });
   };
 
   const handleTimestampChange = (e) => {
