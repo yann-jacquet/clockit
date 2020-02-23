@@ -31,7 +31,7 @@ const useRedmineApi = () => {
     { axiosOptions: { headers: { 'X-Redmine-API-Key': apiKey } } },
   )
     .then((res) => {
-      if (res.status === 200) {
+      if (res && res.status === 200) {
         setParams('appConfig', {
           registeredAppName: 'redmine',
           apiUrl,

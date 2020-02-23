@@ -21,6 +21,8 @@ const useApi = (options = { trigger: false }) => {
       switch (resError.response.status) {
         case 400:
           return setError('400 - Contenu inexistant');
+        case 404:
+          return setError('404 - Contenu introuvable');
         case 403:
           return setError(
             "403 - Votre authentification a expirée ou vous n'êtes pas authorisé à accéder à ce contenu",
