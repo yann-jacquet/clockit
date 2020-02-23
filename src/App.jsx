@@ -16,6 +16,8 @@ function App() {
   const [getParams] = useFileSystem({ src: 'user-preferences' });
   const userParams = getParams('appConfig');
 
+  // TODO: if no user-pref and unsync-task files created, should create them
+
   return (
     <MemoryRouter>
       <Switch>

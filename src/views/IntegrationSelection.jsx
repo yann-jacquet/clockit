@@ -29,7 +29,7 @@ const IntegrationSelection = () => {
     <div className="flex flex-col h-full justify-center">
       <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         {error
-          ? <Message colorScheme="error">Oops ! Seems your information aren't correct, please double check !</Message>
+          ? <Message colorScheme="error">Oops ! Seems your information aren&apos;t correct, please double check !</Message>
           : null}
         <label htmlFor="apiUrl" className="block text-gray-700 text-sm font-bold mb-2">
           API url :

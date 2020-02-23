@@ -27,25 +27,30 @@ const Timer = ({
       {startTimestamp === 0
         ? (
           <button
+            className={`
+              w-24 text-sm bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-green-700 hover:border-green-500
+              ${disabled ? ' opacity-50 cursor-not-allowed' : ''}
+            `}
             type="button"
             onClick={handleStart}
             disabled={disabled}
           >
-          Start
+            Start
           </button>
         )
         : (
           <button
+            className={`
+              w-24 text-sm bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-red-700 hover:border-red-500
+              ${disabled ? ' opacity-50 cursor-not-allowed' : ''}
+            `}
             type="button"
             onClick={handleStop}
             disabled={disabled}
           >
-            Stop
+            {timerString || '00:00:00'}
           </button>
         )}
-      {timerString
-        ? <span>{timerString}</span>
-        : null}
     </div>
   );
 };

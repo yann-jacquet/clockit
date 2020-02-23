@@ -4,25 +4,31 @@ import PropTypes from 'prop-types';
 const TimerCard = ({
   handleTaskIdBlur, task, disabled, error, children,
 }) => (
-  <div>
-    <input
-      type="text"
-      placeholder="Task id"
-      name="taskId"
-      onBlur={handleTaskIdBlur}
-      disabled={disabled}
-      defaultValue={task ? task.id : undefined}
-    />
+  <div className="w-full shadow bg-white py-2 px-3 flex flex-row items-center">
+    <div className="flex-grow flex flex-col text-gray-700">
+      <label htmlFor="taskId" className="w-full flex flex-row text-gray-700 text-sm font-bold">
+        #
+        <input
+          className="flex-grow appearance-none text-gray-700 leading-tight focus:outline-none"
+          type="text"
+          placeholder="Task id"
+          name="taskId"
+          onBlur={handleTaskIdBlur}
+          disabled={disabled}
+          defaultValue={task ? task.id : undefined}
+        />
+      </label>
+      {task
+        ? (
+          <>
+            <span className="font-bold">{task.subject}</span>
+            <span className="italic text-sm">{task.project.name}</span>
+            <span className="italic text-sm">{`Assignee : ${task.assigned_to.name}`}</span>
+          </>
+        )
+        : null}
+    </div>
     {error ? <span>{error}</span> : null}
-    {task
-      ? (
-        <div>
-          <span>{`Subject : ${task.subject}`}</span>
-          <span>{`Project : ${task.project.name}`}</span>
-          <span>{`Assignee : ${task.assigned_to.name}`}</span>
-        </div>
-      )
-      : null}
     <div>
       {children}
     </div>
