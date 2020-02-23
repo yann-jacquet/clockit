@@ -54,11 +54,28 @@ const useRedmineApi = () => {
 
   const postTimeEntry = (task) => {
     const newTimeEntry = {
-      issue_id: task.id,
-      spent_on: task.timeTracking.startTimestamp,
-      hours: msToHours(task.timeTracking.endTimestamp - task.timeTracking.startTimestamp),
+      time_entry: {
+        issue_id: task.id,
+        spent_on: task.timeTracking.startTimestamp,
+        hours: msToHours(task.timeTracking.endTimestamp - task.timeTracking.startTimestamp),
+        comments: '',
+      },
     };
     console.log(newTimeEntry);
+
+    request(
+      'POST',
+      `${apiParams.apiUrl}/time_entries.json`,
+      newTimeEntry,
+      {
+        axiosOptions: {
+          headers: {
+            'X-Redmine-API-Key': apiParams.apiKey,
+            'Content-Type': 'application/json',
+          },
+        },
+      },
+    );
   };
 
   return [

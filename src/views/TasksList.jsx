@@ -38,7 +38,7 @@ const TasksList = () => {
   const pendingTask = getUnsyncTasks('pending');
 
   useEffect(() => {
-    setUnsyncTasksState(getUnsyncTasks('unsyncTasks'));
+    setUnsyncTasksState(getUnsyncTasks('unsyncTasks') || []);
 
     if (pendingTask && pendingTask.taskId) {
       setHasTimerStarted(true);
