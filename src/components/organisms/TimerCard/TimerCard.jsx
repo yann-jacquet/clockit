@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 const TimerCard = ({
   handleTaskIdBlur, task, disabled, error, children,
 }) => (
-  <div className="w-full shadow bg-white py-2 px-3 flex flex-row items-center">
+  <div className="w-full shadow bg-white py-2 px-3 flex flex-row items-center sticky top-0">
     <div className="flex-grow flex flex-col text-gray-700">
-      <label htmlFor="taskId" className="w-full flex flex-row text-gray-700 text-sm font-bold">
+      <label htmlFor="taskId" className="w-1/2 flex flex-row text-gray-700 text-sm font-bold">
         #
         <input
           className="flex-grow appearance-none text-gray-700 leading-tight focus:outline-none"

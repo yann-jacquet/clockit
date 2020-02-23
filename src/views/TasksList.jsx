@@ -22,7 +22,7 @@ const TasksList = () => {
   const [taskToTime, setTaskToTime] = useState(null);
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
   const [startTimestamp, setStartTimestamp] = useState(0);
-  const [unsyncTasks, setUnsyncTasksState] = useState(0);
+  const [unsyncTasks, setUnsyncTasksState] = useState([]);
   const [getUnsyncTasks, setUnsyncTasks] = useFileSystem({
     src: 'unsync-tasks',
     defaults: {
@@ -78,7 +78,10 @@ const TasksList = () => {
         endTimestamp: Date.now(),
       },
     }]);
+
+    // Save locally and in state
     setUnsyncTasks('unsyncTasks', newUnsyncTasks);
+    setUnsyncTasksState(newUnsyncTasks);
   };
 
   const handleOnSyncClick = () => {
@@ -115,6 +118,11 @@ const TasksList = () => {
     setUnsyncTasksState(updatedUnsyncTasks);
   };
 
+  const formatForDateInput = (dateToFormat) => format(
+    new Date(dateToFormat),
+    "yyyy-MM-dd'T'HH:mm",
+  );
+
   return (
     <div>
       <TimerCard
@@ -140,38 +148,45 @@ const TasksList = () => {
           <div className="px-2">
 
             <ul>
-              {Object.keys(sortTasksByDate(unsyncTasks)).map((tasksDay) => (
-                <DayCard
-                  key={tasksDay}
-                  title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
-                >
-                  <ul>
-                    {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
-                      <TimedTaskCard key={unsyncTask.timeTracking.id}>
-                        <div className="flex flex-col">
-                          <span className="font-bold">
-                            {`#${unsyncTask.id} - ${unsyncTask.subject}`}
+              {Object.keys(sortTasksByDate(unsyncTasks))
+                .sort()
+                .map((tasksDay) => (
+                  <DayCard
+                    key={tasksDay}
+                    title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
+                  >
+                    <ul>
+                      {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
+                        <TimedTaskCard key={unsyncTask.timeTracking.id}>
+                          <div className="flex flex-col">
+                            <span className="font-bold">
+                              {`#${unsyncTask.id} - ${unsyncTask.subject}`}
+                            </span>
+                            <span className="italic text-sm">{unsyncTask.project.name}</span>
+                            <TimeDatesForm
+                              initValues={{
+                                startTimestamp: formatForDateInput(
+                                  unsyncTask.timeTracking.startTimestamp,
+                                ),
+                                endTimestamp: formatForDateInput(
+                                  unsyncTask.timeTracking.endTimestamp,
+                                ),
+                              }}
+                              handleBlur={handleTimestampChange}
+                              timeTrackingId={unsyncTask.timeTracking.id}
+                            />
+                          </div>
+                          <span className="text-lg">
+                            {formatTimestamp(
+                              unsyncTask.timeTracking.endTimestamp
+                              - unsyncTask.timeTracking.startTimestamp,
+                            )}
                           </span>
-                          <span className="italic text-sm">{unsyncTask.project.name}</span>
-                          <TimeDatesForm
-                            initValues={{
-                              startTimestamp: format(new Date(unsyncTask.timeTracking.startTimestamp), "yyyy-MM-dd'T'HH:mm"),
-                              endTimestamp: format(new Date(unsyncTask.timeTracking.endTimestamp), "yyyy-MM-dd'T'HH:mm"),
-                            }}
-                            handleBlur={handleTimestampChange}
-                            timeTrackingId={unsyncTask.timeTracking.id}
-                          />
-                        </div>
-                        <span className="text-lg">
-                          {formatTimestamp(
-                            unsyncTask.timeTracking.endTimestamp - unsyncTask.timeTracking.startTimestamp,
-                          )}
-                        </span>
-                      </TimedTaskCard>
-                    ))}
-                  </ul>
-                </DayCard>
-              ))}
+                        </TimedTaskCard>
+                      ))}
+                    </ul>
+                  </DayCard>
+                ))}
             </ul>
 
             <button
