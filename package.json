@@ -26,7 +26,9 @@
     "postinstall": "electron-builder install-app-deps",
     "preelectron-pack": "npm run build",
     "electron-pack-linux": "electron-builder build -l",
-    "electron-pack-mac": "electron-builder build -m"
+    "electron-deploy-linux": "electron-builder build -l --publish always",
+    "electron-pack-mac": "electron-builder build -m",
+    "electron-deploy-mac": "electron-builder build -m --publish always"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -64,10 +66,12 @@
     "productName": "Clockit",
     "copyright": "Copyright © 2020 ${author}",
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "publish": ["github"]
     },
     "linux": {
-      "category": "Utility"
+      "category": "Utility",
+      "publish": ["github"]
     },
     "files": [
       "build/**/*",
@@ -76,5 +80,9 @@
     "directories": {
       "buildResources": "assets"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yann-jacquet/clockit.git"
   }
 }
