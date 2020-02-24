@@ -28,9 +28,9 @@ const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId }) => {
   };
 
   return (
-    <form>
-      {errors ? <span>{errors}</span> : null}
+    <form className="flex flex-col">
       <input
+        className="w-full"
         name={`${timeTrackingId}-startTimestamp`}
         type="datetime-local"
         value={values.startTimestamp}
@@ -38,12 +38,15 @@ const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId }) => {
         onBlur={handleDateBlur}
       />
       <input
+        className="w-full"
         name={`${timeTrackingId}-endTimestamp`}
         type="datetime-local"
         value={values.endTimestamp}
         onChange={handleChange}
         onBlur={handleDateBlur}
       />
+
+      {errors ? <span className="text-sm text-red-500">{errors}</span> : null}
     </form>
   );
 };

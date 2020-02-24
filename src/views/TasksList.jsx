@@ -191,7 +191,7 @@ const TasksList = () => {
                               timeTrackingId={unsyncTask.timeTracking.id}
                             />
                           </div>
-                          <span className="text-lg">
+                          <span className="w-full text-right text-lg">
                             {formatTimestamp(
                               unsyncTask.timeTracking.endTimestamp
                               - unsyncTask.timeTracking.startTimestamp,

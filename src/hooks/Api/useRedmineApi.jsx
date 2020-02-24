@@ -40,6 +40,8 @@ const useRedmineApi = () => {
           apiKey,
         });
       }
+
+      return res;
     });
 
   const getIssuesAssignedTo = (userId) => request(
