@@ -11,6 +11,7 @@
     "axios": "0.19.2",
     "date-fns": "2.9.0",
     "electron-is-dev": "1.1.0",
+    "electron-updater": "4.2.2",
     "lodash": "^4.17.15",
     "prop-types": "15.7.2",
     "react": "16.12.0",
@@ -67,11 +68,15 @@
     "copyright": "Copyright © 2020 ${author}",
     "mac": {
       "category": "public.app-category.utilities",
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ]
     },
     "linux": {
       "category": "Utility",
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ]
     },
     "files": [
       "build/**/*",

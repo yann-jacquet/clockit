@@ -1,4 +1,5 @@
 const electron = require('electron');
+const { autoUpdater } = require('electron-updater');
 
 const { app } = electron;
 const { BrowserWindow } = electron;
@@ -23,6 +24,10 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   }
   mainWindow.on('closed', () => { mainWindow = null; });
+
+  mainWindow.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  });
 }
 
 app.on('ready', createWindow);
@@ -37,4 +42,11 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+autoUpdater.on('update-available', () => {
+  mainWindow.webContents.send('update_available');
+});
+autoUpdater.on('update-downloaded', () => {
+  mainWindow.webContents.send('update_downloaded');
 });
