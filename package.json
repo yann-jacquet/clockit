@@ -1,6 +1,6 @@
 {
   "name": "clockit",
-  "version": "0.2.0-b",
+  "version": "0.2.1-b",
   "private": true,
   "main": "public/electron.js",
   "homepage": "./",
@@ -29,7 +29,8 @@
     "electron-pack-linux": "electron-builder build -l",
     "electron-deploy-linux": "electron-builder build -l --publish always",
     "electron-pack-mac": "electron-builder build -m",
-    "electron-deploy-mac": "electron-builder build -m --publish always"
+    "electron-deploy-mac": "electron-builder build -m --publish always",
+    "electron-deploy-all": "electron-builder build -ml --publish always"
   },
   "eslintConfig": {
     "extends": "react-app"
