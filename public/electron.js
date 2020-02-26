@@ -1,7 +1,7 @@
 const electron = require('electron');
 const { autoUpdater } = require('electron-updater');
 
-const { app } = electron;
+const { app, ipcMain } = electron;
 const { BrowserWindow } = electron;
 
 const path = require('path');
@@ -49,4 +49,7 @@ autoUpdater.on('update-available', () => {
 });
 autoUpdater.on('update-downloaded', () => {
   mainWindow.webContents.send('update_downloaded');
+});
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
 });
