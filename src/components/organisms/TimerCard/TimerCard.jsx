@@ -26,7 +26,9 @@ const TimerCard = ({
           <>
             <span className="font-bold">{task.subject}</span>
             <span className="italic text-sm">{task.project.name}</span>
-            <span className="italic text-sm">{`Assignee : ${task.assigned_to.name}`}</span>
+            <span className="italic text-sm">
+              {task.assigned_to ? `Assignee : ${task.assigned_to.name}` : 'Nobody Assigned'}
+            </span>
           </>
         )
         : null}
