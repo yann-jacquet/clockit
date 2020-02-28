@@ -18,6 +18,8 @@ import useFileSystem from '../hooks/useFileSystem';
 import formatTimestamp from '../utils/formatTimestamp';
 import sortTasksByDate from '../utils/sortTasksByDate';
 
+// TODO: put timer logic in separate hook
+
 const TasksList = () => {
   const [taskToTime, setTaskToTime] = useState(null);
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
@@ -138,6 +140,52 @@ const TasksList = () => {
     "yyyy-MM-dd'T'HH:mm",
   );
 
+  const buildDayCardList = () => {
+    const sortedTasksByDate = sortTasksByDate(unsyncTasks);
+    const datesArray = Object.keys(sortedTasksByDate);
+
+    return datesArray
+      .sort()
+      .map((tasksDay) => (
+        <DayCard
+          key={tasksDay}
+          title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
+          dayTotalTracked={formatTimestamp(sortedTasksByDate[tasksDay].totalTracked)}
+        >
+          <ul>
+            {sortedTasksByDate[tasksDay].tasksByDay.map((unsyncTask) => (
+              <TimedTaskCard key={unsyncTask.timeTracking.id}>
+                <div className="flex flex-col">
+                  <span className="font-bold">
+                    {`#${unsyncTask.id} - ${unsyncTask.subject}`}
+                  </span>
+                  <span className="italic text-sm">{unsyncTask.project.name}</span>
+                  <TimeDatesForm
+                    initValues={{
+                      startTimestamp: formatForDateInput(
+                        unsyncTask.timeTracking.startTimestamp,
+                      ),
+                      endTimestamp: formatForDateInput(
+                        unsyncTask.timeTracking.endTimestamp,
+                      ),
+                    }}
+                    handleBlur={handleTimestampChange}
+                    timeTrackingId={unsyncTask.timeTracking.id}
+                  />
+                </div>
+                <span className="w-full text-right text-lg">
+                  {formatTimestamp(
+                    unsyncTask.timeTracking.endTimestamp
+                    - unsyncTask.timeTracking.startTimestamp,
+                  )}
+                </span>
+              </TimedTaskCard>
+            ))}
+          </ul>
+        </DayCard>
+      ));
+  };
+
   return (
     <div>
       <TimerCard
@@ -163,45 +211,7 @@ const TasksList = () => {
           <div className="px-2">
 
             <ul>
-              {Object.keys(sortTasksByDate(unsyncTasks))
-                .sort()
-                .map((tasksDay) => (
-                  <DayCard
-                    key={tasksDay}
-                    title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
-                  >
-                    <ul>
-                      {sortTasksByDate(unsyncTasks)[tasksDay].map((unsyncTask) => (
-                        <TimedTaskCard key={unsyncTask.timeTracking.id}>
-                          <div className="flex flex-col">
-                            <span className="font-bold">
-                              {`#${unsyncTask.id} - ${unsyncTask.subject}`}
-                            </span>
-                            <span className="italic text-sm">{unsyncTask.project.name}</span>
-                            <TimeDatesForm
-                              initValues={{
-                                startTimestamp: formatForDateInput(
-                                  unsyncTask.timeTracking.startTimestamp,
-                                ),
-                                endTimestamp: formatForDateInput(
-                                  unsyncTask.timeTracking.endTimestamp,
-                                ),
-                              }}
-                              handleBlur={handleTimestampChange}
-                              timeTrackingId={unsyncTask.timeTracking.id}
-                            />
-                          </div>
-                          <span className="w-full text-right text-lg">
-                            {formatTimestamp(
-                              unsyncTask.timeTracking.endTimestamp
-                              - unsyncTask.timeTracking.startTimestamp,
-                            )}
-                          </span>
-                        </TimedTaskCard>
-                      ))}
-                    </ul>
-                  </DayCard>
-                ))}
+              {buildDayCardList()}
             </ul>
 
             <button
