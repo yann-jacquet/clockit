@@ -216,15 +216,19 @@ const TasksList = () => {
         <div className="px-2">
           <ul>{buildDayCardList()}</ul>
 
-          <button
-            className={`
-          mt-2 w-full bg-teal-300 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-teal-500 hover:border-teal-300
-          `}
-            type="button"
-            onClick={handleOnSyncClick}
-          >
-            {`Sync ${unsyncTasks.length} tasks`}
-          </button>
+          {unsyncTasks.filter(task => isRedmineTask(task)).length > 0
+            ? (
+              <button
+                className={`
+              mt-2 w-full bg-teal-300 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-teal-500 hover:border-teal-300
+              `}
+                type="button"
+                onClick={handleOnSyncClick}
+              >
+                {`Sync ${unsyncTasks.filter(task => isRedmineTask(task)).length} tasks`}
+              </button>
+            )
+            : null}
         </div>
       ) : (
           <div className="mt-4 text-gray-500 w-full text-center italic">
