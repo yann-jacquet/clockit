@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { parseISO, isAfter } from 'date-fns';
 
-const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId }) => {
+const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId, isNonIdTask }) => {
   const [values, setValues] = useState(initValues);
   const [errors, setErrors] = useState('');
 
@@ -30,7 +30,7 @@ const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId }) => {
   return (
     <form className="flex flex-col">
       <input
-        className="w-full"
+        className={`w-full ${isNonIdTask ? ' bg-blue-100' : ''}`}
         name={`${timeTrackingId}-startTimestamp`}
         type="datetime-local"
         value={values.startTimestamp}
@@ -38,7 +38,7 @@ const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId }) => {
         onBlur={handleDateBlur}
       />
       <input
-        className="w-full"
+        className={`w-full ${isNonIdTask ? ' bg-blue-100' : ''}`}
         name={`${timeTrackingId}-endTimestamp`}
         type="datetime-local"
         value={values.endTimestamp}
@@ -58,6 +58,11 @@ TimeDatesForm.propTypes = {
   }).isRequired,
   handleBlur: PropTypes.func.isRequired,
   timeTrackingId: PropTypes.string.isRequired,
+  isNonIdTask: PropTypes.bool,
+};
+
+TimeDatesForm.defaultProps = {
+  isNonIdTask: false,
 };
 
 export default TimeDatesForm;

@@ -5,13 +5,13 @@ import PropTypes from 'prop-types';
 import formatTimestamp from '../../../utils/formatTimestamp';
 
 const Timer = ({
-  handleStart, handleStop, startTimestamp, disabled,
+  handleStart, handleStop, startTimestamp, disabled, timerState,
 }) => {
   const [timerString, setTimerString] = useState('');
 
   useEffect(() => {
     let interval = null;
-    if (startTimestamp > 0) {
+    if (timerState === 'running') {
       interval = setInterval(() => {
         const timeDifference = Date.now() - startTimestamp;
         setTimerString(formatTimestamp(timeDifference));
@@ -24,7 +24,7 @@ const Timer = ({
 
   return (
     <div>
-      {startTimestamp === 0
+      {timerState === 'stopped'
         ? (
           <button
             className={`
@@ -60,10 +60,12 @@ Timer.propTypes = {
   handleStart: PropTypes.func.isRequired,
   handleStop: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
+  timerState: PropTypes.oneOf(['running', 'stopped']),
 };
 
 Timer.defaultProps = {
   disabled: false,
+  timerState: false,
 };
 
 export default Timer;

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  format, getTime, parseISO, isAfter,
-} from 'date-fns';
+import { format, getTime, parseISO, isAfter } from 'date-fns';
 
 // Components
 import TimerCard from '../components/organisms/TimerCard';
@@ -13,247 +11,225 @@ import DayCard from '../components/organisms/DayCard';
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi';
 import useFileSystem from '../hooks/useFileSystem';
+import useTimer from '../hooks/useTimer';
 
 // Utils
 import formatTimestamp from '../utils/formatTimestamp';
 import sortTasksByDate from '../utils/sortTasksByDate';
-
-// TODO: put timer logic in separate hook
+import isRedmineTask from '../utils/isRedmineTask';
+import TaskCardContent from '../components/molecules/TaskCardContent/TaskCardContent';
 
 const TasksList = () => {
-  const [taskToTime, setTaskToTime] = useState(null);
-  const [unlinkTaskToTime, setUnlinkTaskToTime] = useState('');
-  const [hasTimerStarted, setHasTimerStarted] = useState(false);
-  const [switchState, setSwitchState] = useState('taskId');
-  const [startTimestamp, setStartTimestamp] = useState(0);
-  const [unsyncTasks, setUnsyncTasksState] = useState([]);
-  const [getUnsyncTasks, setUnsyncTasks] = useFileSystem({
+  const [pendingTask, setPendingTask] = useState(null);
+  const [trackingMode, setTrackingMode] = useState('withId'); // withId || withName
+  const [unsyncTasks, setUnsyncTasks] = useState([]);
+  const [getLocalFile, setLocalFile] = useFileSystem({
     src: 'unsync-tasks',
     defaults: {
-      pending: {
-        taskId: null,
-        startTimestamp: null,
-      },
+      pending: null,
       unsyncTasks: [],
     },
   });
+  const { timerState, startTimer, stopTimer, getTimerTimestamps } = useTimer();
   const [taskRequestState, taskPayload, taskError, { getTask }] = useRedmineApi();
   const [timeEntryRequestState, , timeEntryError, { postTimeEntry }] = useRedmineApi();
-  const pendingTask = getUnsyncTasks('pending');
 
   useEffect(() => {
-    setUnsyncTasksState(getUnsyncTasks('unsyncTasks') || []);
+    // On mount should initialize with pending task and tasks waiting for sync
+    const localPendingTask = getLocalFile('pending');
+    const localUnsyncTasks = getLocalFile('unsyncTasks');
 
-    if (pendingTask && (pendingTask.taskId || pendingTask.taskName)) {
-      setHasTimerStarted(true);
-      setStartTimestamp(pendingTask.startTimestamp);
+    if (localPendingTask) {
+      setTrackingMode(isRedmineTask(localPendingTask) ? 'withId' : 'withName')
+      setPendingTask(localPendingTask)
+      startTimer(localPendingTask.startTimestamp)
+    }
 
-      if (pendingTask.taskId) getTask(pendingTask.taskId);
-      if (pendingTask.taskName) {
-        setUnlinkTaskToTime(pendingTask.taskName);
-        setSwitchState('taskName');
-      }
-    } else if (!pendingTask && !unsyncTasks) setUnsyncTasks({});
+    if (localPendingTask && isRedmineTask(localPendingTask)) {
+      getTask(localPendingTask.taskId)
+    }
+
+    if (localUnsyncTasks) setUnsyncTasks(localUnsyncTasks)
   }, []);
 
   useEffect(() => {
-    if (taskPayload) setTaskToTime(taskPayload.issues[0]);
+    if (taskPayload) setPendingTask(taskPayload.issues[0]);
   }, [taskPayload]);
 
-  const handleTaskIdBlur = (e) => {
-    const taskIdToSearch = e.target.value;
-    if (taskIdToSearch) {
-      getTask(taskIdToSearch);
+  const handleTimerCardInputBlur = e => {
+    if (trackingMode === 'withId' && e.target.value) {
+      getTask(e.target.value);
+    } else if (trackingMode === 'withName' && e.target.value) {
+      setPendingTask({
+        id: null,
+        subject: e.target.value,
+        assigned_to: null,
+        project: null,
+      });
     }
   };
 
   const handleTimerStart = () => {
-    const newPendingTask = {
-      taskId: taskToTime ? taskToTime.id : null,
-      taskName: unlinkTaskToTime || null,
+    const taskToSave = {
+      taskId: trackingMode === 'withId' ? pendingTask.id : null,
+      subject: pendingTask.subject,
       startTimestamp: Date.now(),
     };
 
-    setHasTimerStarted(true);
-    setStartTimestamp(Date.now());
-    setUnsyncTasks('pending', newPendingTask);
+    startTimer();
+    setLocalFile('pending', taskToSave);
   };
 
   const handleTimerStop = () => {
-    setHasTimerStarted(false);
-    setTaskToTime(null);
-    setStartTimestamp(0);
-    setUnlinkTaskToTime('');
-    setUnsyncTasks('pending', { taskId: null, taskName: null, startTimestamp: null });
+    stopTimer();
     // Save tracked task in unsync array
-    const newUnsyncTasks = unsyncTasks.concat([{
-      ...taskToTime,
-      taskName: unlinkTaskToTime || null,
-      timeTracking: {
-        id: Math.random().toString(36).substring(2, 15) + Math.random(),
-        startTimestamp,
-        endTimestamp: Date.now(),
+    const newUnsyncTasks = unsyncTasks.concat([
+      {
+        ...pendingTask,
+        timeTracking: {
+          id:
+            Math.random()
+              .toString(36)
+              .substring(2, 15) + Math.random(),
+          startTimestamp: getTimerTimestamps().start,
+          endTimestamp: Date.now(),
+        },
       },
-    }]);
+    ]);
 
-    // Save locally and in state
-    setUnsyncTasks('unsyncTasks', newUnsyncTasks);
-    setUnsyncTasksState(newUnsyncTasks);
+    // Clear from local pending task and add it to unsync array
+    setPendingTask(null);
+    setLocalFile('pending', null);
+    setLocalFile('unsyncTasks', newUnsyncTasks);
+    setUnsyncTasks(newUnsyncTasks);
   };
 
   const handleOnSyncClick = () => {
     const requests = [];
     const succeededSyncIds = [];
-    unsyncTasks.forEach((taskToSync) => {
-      requests.push(
-        postTimeEntry(taskToSync)
-          .then((res) => ((res && res.status === 201) && succeededSyncIds.push(taskToSync.id))),
-      );
-    });
 
-    Promise.all(requests)
-      .then(() => {
-        // Clean sync tasks from array
-        const stillWaitingToSync = unsyncTasks
-          .filter((task) => !succeededSyncIds.includes(task.id));
-
-        setUnsyncTasksState(stillWaitingToSync);
-        setUnsyncTasks('unsyncTasks', stillWaitingToSync);
+    unsyncTasks
+      .filter((taskToSync) => isRedmineTask(taskToSync))
+      .forEach((taskToSync) => {
+        requests.push(
+          postTimeEntry(taskToSync).then(
+            (res) => res && res.status === 201 && succeededSyncIds.push(taskToSync.id)
+          )
+        );
       });
+
+    Promise.all(requests).then(() => {
+      // Clean sync tasks from array
+      const stillWaitingToSync = unsyncTasks.filter((task) => (
+        !succeededSyncIds.includes(task.id)
+        || !isRedmineTask(task)
+      ));
+
+      setUnsyncTasks(stillWaitingToSync);
+      setLocalFile('unsyncTasks', stillWaitingToSync);
+    });
   };
 
-  const handleTimestampChange = (e) => {
+  const handleTimestampChange = e => {
     const splitedInputName = e.target.name.split('-');
     const taskTimmerId = splitedInputName[0];
     const side = splitedInputName[1];
     const newTimestamp = getTime(parseISO(e.target.value));
 
-    const updatedUnsyncTasks = unsyncTasks.map((unsyncTask) => {
+    const updatedUnsyncTasks = unsyncTasks.map(unsyncTask => {
       const isEndAfterStart = isAfter(
         side === 'endTimestamp' ? newTimestamp : unsyncTask.timeTracking.endTimestamp,
-        side === 'startTimestamp' ? newTimestamp : unsyncTask.timeTracking.startTimestamp,
+        side === 'startTimestamp' ? newTimestamp : unsyncTask.timeTracking.startTimestamp
       );
-      if ((unsyncTask.timeTracking.id === taskTimmerId) && isEndAfterStart) {
+      if (unsyncTask.timeTracking.id === taskTimmerId && isEndAfterStart) {
         return {
           ...unsyncTask,
           timeTracking: {
             ...unsyncTask.timeTracking,
-            [side]: newTimestamp,
-          },
+            [side]: newTimestamp
+          }
         };
       }
       return unsyncTask;
     });
 
     // Update on local and on state to refresh the view
-    setUnsyncTasks('unsyncTasks', updatedUnsyncTasks);
-    setUnsyncTasksState(updatedUnsyncTasks);
+    setLocalFile('unsyncTasks', updatedUnsyncTasks);
+    setUnsyncTasks(updatedUnsyncTasks);
   };
 
-  const handleTaskNameChange = (e) => setUnlinkTaskToTime(e.target.value);
-
-  const handleSwitchClick = () => setSwitchState((prevState) => (
-    prevState === 'taskId' ? 'text' : 'taskId'
-  ));
-
-  const formatForDateInput = (dateToFormat) => format(
-    new Date(dateToFormat),
-    "yyyy-MM-dd'T'HH:mm",
-  );
+  const handleSwitchClick = () => {
+    // re-init task and switch mode
+    setPendingTask(null)
+    setTrackingMode(prevState => (prevState === 'withId' ? 'withName' : 'withId'));
+  }
 
   const buildDayCardList = () => {
     const sortedTasksByDate = sortTasksByDate(unsyncTasks);
     const datesArray = Object.keys(sortedTasksByDate);
 
-    return datesArray
-      .sort()
-      .map((tasksDay) => (
-        <DayCard
-          key={tasksDay}
-          title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
-          dayTotalTracked={formatTimestamp(sortedTasksByDate[tasksDay].totalTracked)}
-        >
-          <ul>
-            {sortedTasksByDate[tasksDay].tasksByDay.map((unsyncTask) => (
-              <TimedTaskCard key={unsyncTask.timeTracking.id}>
-                <div className="flex flex-col">
-                  <span className="font-bold">
-                    {`#${unsyncTask.id} - ${unsyncTask.subject}`}
-                  </span>
-                  <span className="italic text-sm">{unsyncTask.project.name}</span>
-                  <TimeDatesForm
-                    initValues={{
-                      startTimestamp: formatForDateInput(
-                        unsyncTask.timeTracking.startTimestamp,
-                      ),
-                      endTimestamp: formatForDateInput(
-                        unsyncTask.timeTracking.endTimestamp,
-                      ),
-                    }}
-                    handleBlur={handleTimestampChange}
-                    timeTrackingId={unsyncTask.timeTracking.id}
-                  />
-                </div>
-                <span className="w-full text-right text-lg">
-                  {formatTimestamp(
-                    unsyncTask.timeTracking.endTimestamp
-                    - unsyncTask.timeTracking.startTimestamp,
-                  )}
-                </span>
-              </TimedTaskCard>
-            ))}
-          </ul>
-        </DayCard>
-      ));
+    return datesArray.sort().map(tasksDay => (
+      <DayCard
+        key={tasksDay}
+        title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
+        dayTotalTracked={formatTimestamp(sortedTasksByDate[tasksDay].totalTracked)}
+      >
+        <ul>
+          {sortedTasksByDate[tasksDay].tasksByDay.map(unsyncTask => (
+            <TimedTaskCard key={unsyncTask.timeTracking.id} isNonIdTask={!isRedmineTask(unsyncTask)}>
+              <TaskCardContent
+                isNonIdTask={!isRedmineTask(unsyncTask)}
+                task={unsyncTask}
+                handleDatesBlur={handleTimestampChange}
+              />
+            </TimedTaskCard>
+          ))}
+        </ul>
+      </DayCard>
+    ));
   };
 
   return (
     <div>
       <TimerCard
-        onTaskIdBlur={handleTaskIdBlur}
-        task={taskToTime}
-        disabled={taskRequestState === 'loading' || hasTimerStarted}
-        error={taskError
-          || ((taskPayload && taskPayload.total_count === 0)
-            ? 'No task found with this id'
-            : null
-          )}
-        nameValue={unlinkTaskToTime}
-        onTaskNameChange={handleTaskNameChange}
-        switchState={switchState}
+        onInputBlur={handleTimerCardInputBlur}
+        task={pendingTask}
+        disabled={taskRequestState === 'loading' || (trackingMode === 'withId' && timerState === 'running')}
+        error={
+          taskError ||
+          (taskPayload && taskPayload.total_count === 0 ? 'No task found with this id' : null)
+        }
+        trackingMode={trackingMode}
         onSwitchClick={handleSwitchClick}
+        disableSwitch={taskRequestState === 'loading' || timerState === 'running'}
       >
         <Timer
+          timerState={timerState}
           handleStart={handleTimerStart}
           handleStop={handleTimerStop}
-          disabled={!taskToTime}
-          startTimestamp={startTimestamp}
+          disabled={!(pendingTask && pendingTask.subject)}
+          startTimestamp={getTimerTimestamps().start}
         />
       </TimerCard>
 
-      {unsyncTasks && unsyncTasks.length > 0
-        ? (
-          <div className="px-2">
+      {unsyncTasks && unsyncTasks.length > 0 ? (
+        <div className="px-2">
+          <ul>{buildDayCardList()}</ul>
 
-            <ul>
-              {buildDayCardList()}
-            </ul>
-
-            <button
-              className={`
+          <button
+            className={`
           mt-2 w-full bg-teal-300 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-teal-500 hover:border-teal-300
           `}
-              type="button"
-              onClick={handleOnSyncClick}
-            >
-              {`Sync ${unsyncTasks.length} tasks`}
-            </button>
-          </div>
-        )
-        : (
+            type="button"
+            onClick={handleOnSyncClick}
+          >
+            {`Sync ${unsyncTasks.length} tasks`}
+          </button>
+        </div>
+      ) : (
           <div className="mt-4 text-gray-500 w-full text-center italic">
             Start your day with a task
-          </div>
+        </div>
         )}
     </div>
   );
