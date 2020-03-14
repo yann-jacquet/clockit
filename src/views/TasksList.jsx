@@ -22,7 +22,9 @@ import sortTasksByDate from '../utils/sortTasksByDate';
 
 const TasksList = () => {
   const [taskToTime, setTaskToTime] = useState(null);
+  const [unlinkTaskToTime, setUnlinkTaskToTime] = useState('');
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
+  const [switchState, setSwitchState] = useState('taskId');
   const [startTimestamp, setStartTimestamp] = useState(0);
   const [unsyncTasks, setUnsyncTasksState] = useState([]);
   const [getUnsyncTasks, setUnsyncTasks] = useFileSystem({
@@ -42,10 +44,15 @@ const TasksList = () => {
   useEffect(() => {
     setUnsyncTasksState(getUnsyncTasks('unsyncTasks') || []);
 
-    if (pendingTask && pendingTask.taskId) {
+    if (pendingTask && (pendingTask.taskId || pendingTask.taskName)) {
       setHasTimerStarted(true);
       setStartTimestamp(pendingTask.startTimestamp);
-      getTask(pendingTask.taskId);
+
+      if (pendingTask.taskId) getTask(pendingTask.taskId);
+      if (pendingTask.taskName) {
+        setUnlinkTaskToTime(pendingTask.taskName);
+        setSwitchState('taskName');
+      }
     } else if (!pendingTask && !unsyncTasks) setUnsyncTasks({});
   }, []);
 
@@ -61,19 +68,27 @@ const TasksList = () => {
   };
 
   const handleTimerStart = () => {
+    const newPendingTask = {
+      taskId: taskToTime ? taskToTime.id : null,
+      taskName: unlinkTaskToTime || null,
+      startTimestamp: Date.now(),
+    };
+
     setHasTimerStarted(true);
     setStartTimestamp(Date.now());
-    setUnsyncTasks('pending', { taskId: taskToTime.id, startTimestamp: Date.now() });
+    setUnsyncTasks('pending', newPendingTask);
   };
 
   const handleTimerStop = () => {
     setHasTimerStarted(false);
     setTaskToTime(null);
     setStartTimestamp(0);
-    setUnsyncTasks('pending', { taskId: null, startTimestamp: null });
+    setUnlinkTaskToTime('');
+    setUnsyncTasks('pending', { taskId: null, taskName: null, startTimestamp: null });
     // Save tracked task in unsync array
     const newUnsyncTasks = unsyncTasks.concat([{
       ...taskToTime,
+      taskName: unlinkTaskToTime || null,
       timeTracking: {
         id: Math.random().toString(36).substring(2, 15) + Math.random(),
         startTimestamp,
@@ -135,6 +150,12 @@ const TasksList = () => {
     setUnsyncTasksState(updatedUnsyncTasks);
   };
 
+  const handleTaskNameChange = (e) => setUnlinkTaskToTime(e.target.value);
+
+  const handleSwitchClick = () => setSwitchState((prevState) => (
+    prevState === 'taskId' ? 'text' : 'taskId'
+  ));
+
   const formatForDateInput = (dateToFormat) => format(
     new Date(dateToFormat),
     "yyyy-MM-dd'T'HH:mm",
@@ -189,7 +210,7 @@ const TasksList = () => {
   return (
     <div>
       <TimerCard
-        handleTaskIdBlur={handleTaskIdBlur}
+        onTaskIdBlur={handleTaskIdBlur}
         task={taskToTime}
         disabled={taskRequestState === 'loading' || hasTimerStarted}
         error={taskError
@@ -197,6 +218,10 @@ const TasksList = () => {
             ? 'No task found with this id'
             : null
           )}
+        nameValue={unlinkTaskToTime}
+        onTaskNameChange={handleTaskNameChange}
+        switchState={switchState}
+        onSwitchClick={handleSwitchClick}
       >
         <Timer
           handleStart={handleTimerStart}
