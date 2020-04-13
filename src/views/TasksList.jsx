@@ -74,7 +74,7 @@ const TasksList = () => {
     }
   };
 
-  const handleLinkInputBlur = e => getTask(e.target.value);
+  const handleLinkInputBlur = e => e.target.value && getTask(e.target.value);
 
   const handleOnModalCancelClick = () => {
     setUnlinkedPairing({ unlinkedTimeTrackingID: null, taskToLink: null })
@@ -136,6 +136,13 @@ const TasksList = () => {
     setLocalFile('unsyncTasks', newUnsyncTasks);
     setUnsyncTasks(newUnsyncTasks);
   };
+
+  const handleDeleteClick = (idToDelete) => {
+    const newUnsyncTasks = unsyncTasks.filter(task => task.timeTracking.id !== idToDelete)
+
+    setLocalFile('unsyncTasks', newUnsyncTasks);
+    setUnsyncTasks(newUnsyncTasks);
+  }
 
   const handleOnSyncClick = () => {
     const requests = [];
@@ -209,7 +216,12 @@ const TasksList = () => {
       >
         <ul>
           {sortedTasksByDate[tasksDay].tasksByDay.map(unsyncTask => (
-            <TimedTaskCard key={unsyncTask.timeTracking.id} isNonIdTask={!isRedmineTask(unsyncTask)} onLinkIDClick={() => handleonLinkIDClick(unsyncTask.timeTracking.id)}>
+            <TimedTaskCard
+              key={unsyncTask.timeTracking.id}
+              isNonIdTask={!isRedmineTask(unsyncTask)}
+              onLinkIDClick={!unsyncTask.id ? () => handleonLinkIDClick(unsyncTask.timeTracking.id) : undefined}
+              onDeleteClick={() => handleDeleteClick(unsyncTask.timeTracking.id)}
+            >
               <TaskCardContent
                 isNonIdTask={!isRedmineTask(unsyncTask)}
                 task={unsyncTask}

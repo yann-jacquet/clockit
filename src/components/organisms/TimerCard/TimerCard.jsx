@@ -64,7 +64,7 @@ const TimerCard = ({
           )
           : null}
       </div>
-      <div>
+      <div className="flex-shrink-0">
         {children}
       </div>
     </div>
@@ -80,6 +80,8 @@ TimerCard.propTypes = {
   disableSwitch: PropTypes.bool,
   error: PropTypes.string,
   trackingMode: PropTypes.oneOf(['withId', 'withName']),
+  showSwitch: PropTypes.bool,
+  hasShadow: PropTypes.bool,
 };
 
 TimerCard.defaultProps = {
@@ -88,6 +90,8 @@ TimerCard.defaultProps = {
   disableSwitch: false,
   error: null,
   trackingMode: 'withId',
+  showSwitch: true,
+  hasShadow: true,
 };
 
 export default TimerCard;
