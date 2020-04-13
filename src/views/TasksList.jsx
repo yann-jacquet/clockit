@@ -23,6 +23,7 @@ import TaskCardContent from '../components/molecules/TaskCardContent/TaskCardCon
 const TasksList = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pendingTask, setPendingTask] = useState(null);
+  const [unlinkedPairing, setUnlinkedPairing] = useState({ unlinkedTimeTrackingID: null, taskToLink: null });
   const [trackingMode, setTrackingMode] = useState('withId'); // withId || withName
   const [unsyncTasks, setUnsyncTasks] = useState([]);
   const [getLocalFile, setLocalFile] = useFileSystem({
@@ -55,7 +56,9 @@ const TasksList = () => {
   }, []);
 
   useEffect(() => {
-    if (taskPayload) setPendingTask(taskPayload.issues[0]);
+    // Depends on which component triggered the call
+    if (taskPayload && !isModalVisible) setPendingTask(taskPayload.issues[0]);
+    if (taskPayload && isModalVisible) setUnlinkedPairing({ ...unlinkedPairing, taskToLink: taskPayload.issues[0] });
   }, [taskPayload]);
 
   const handleTimerCardInputBlur = e => {
@@ -70,6 +73,34 @@ const TasksList = () => {
       });
     }
   };
+
+  const handleLinkInputBlur = e => getTask(e.target.value);
+
+  const handleOnModalCancelClick = () => {
+    setUnlinkedPairing({ unlinkedTimeTrackingID: null, taskToLink: null })
+    setIsModalVisible(false)
+  }
+
+  const handleOnModalConfirmClick = () => {
+    if (unlinkedPairing.taskToLink) {
+      // Replace task with timetrackingID to redmine task
+      const newUnsyncTasks = unsyncTasks.map(task => (
+        task.timeTracking.id === unlinkedPairing.unlinkedTimeTrackingID
+          ? { ...unlinkedPairing.taskToLink, timeTracking: { ...task.timeTracking } }
+          : task
+      ))
+
+      setLocalFile('unsyncTasks', newUnsyncTasks);
+      setUnsyncTasks(newUnsyncTasks);
+    }
+    setUnlinkedPairing({ unlinkedTimeTrackingID: null, taskToLink: null })
+    setIsModalVisible(false)
+  }
+
+  const handleonLinkIDClick = (timeTrackingId) => {
+    setUnlinkedPairing({ ...unlinkedPairing, unlinkedTimeTrackingID: timeTrackingId })
+    setIsModalVisible(true)
+  }
 
   const handleTimerStart = () => {
     const taskToSave = {
@@ -178,7 +209,7 @@ const TasksList = () => {
       >
         <ul>
           {sortedTasksByDate[tasksDay].tasksByDay.map(unsyncTask => (
-            <TimedTaskCard key={unsyncTask.timeTracking.id} isNonIdTask={!isRedmineTask(unsyncTask)} onLinkIDClick={() => setIsModalVisible(true)}>
+            <TimedTaskCard key={unsyncTask.timeTracking.id} isNonIdTask={!isRedmineTask(unsyncTask)} onLinkIDClick={() => handleonLinkIDClick(unsyncTask.timeTracking.id)}>
               <TaskCardContent
                 isNonIdTask={!isRedmineTask(unsyncTask)}
                 task={unsyncTask}
@@ -198,8 +229,11 @@ const TasksList = () => {
         task={pendingTask}
         disabled={taskRequestState === 'loading' || (trackingMode === 'withId' && timerState === 'running')}
         error={
-          taskError ||
-          (taskPayload && taskPayload.total_count === 0 ? 'No task found with this id' : null)
+          !isModalVisible
+          && (
+            taskError
+            || (taskPayload && taskPayload.total_count === 0 ? 'No task found with this id' : null)
+          )
         }
         trackingMode={trackingMode}
         onSwitchClick={handleSwitchClick}
@@ -239,8 +273,39 @@ const TasksList = () => {
         )}
 
       <BottomModal isVisible={isModalVisible}>
-        Hello I am a modal
-        <button onClick={() => setIsModalVisible(false)}>Close</button>
+        <TimerCard
+          onInputBlur={handleLinkInputBlur}
+          task={unlinkedPairing.taskToLink}
+          disabled={taskRequestState === 'loading' || (trackingMode === 'withId' && timerState === 'running')}
+          error={
+            isModalVisible
+            && (
+              taskError ||
+              (taskPayload && taskPayload.total_count === 0 ? 'No task found with this id' : null)
+            )
+          }
+          showSwitch={false}
+          hasShadow={false}
+        >
+          <button
+            className={`
+              bg-green-500 hover:bg-green-300 mr-2 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline border-b-4 border-green-300 hover:border-green-500
+            `}
+            type="button"
+            onClick={handleOnModalConfirmClick}
+          >
+            Confirm
+          </button>
+          <button
+            className={`
+              bg-red-500 hover:bg-red-300 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline border-b-4 border-red-300 hover:border-red-500
+            `}
+            type="button"
+            onClick={handleOnModalCancelClick}
+          >
+            Cancel
+          </button>
+        </TimerCard>
       </BottomModal>
     </div>
   );

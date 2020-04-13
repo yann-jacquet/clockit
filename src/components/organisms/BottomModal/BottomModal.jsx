@@ -15,7 +15,6 @@ const BottomModal = ({ isVisible, children }) => {
         </div>
       </>
     ),
-    // A DOM element
     document.body,
   );
 }
