@@ -1,0 +1,13 @@
+.timed-task-card-link-btn {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(100%);
+  transition-property: opacity transform;
+  transition: 0.2s ease-in;
+}
+
+.timed-task-card:hover .timed-task-card-link-btn {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+}

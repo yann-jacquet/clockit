@@ -233,7 +233,7 @@ const TasksList = () => {
       ) : (
           <div className="mt-4 text-gray-500 w-full text-center italic">
             Start your day with a task
-        </div>
+          </div>
         )}
     </div>
   );
