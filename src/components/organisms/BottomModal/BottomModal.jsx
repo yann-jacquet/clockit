@@ -1,27 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import PropTypes from 'prop-types'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 
 // Style
-import './BottomModal.css'
+import './BottomModal.css';
 
-const BottomModal = ({ isVisible, children }) => {
-  return isVisible && ReactDOM.createPortal(
-    (
-      <>
-        <div className="modal-bg absolute bg-black z-40 left-0 right-0 bottom-0 top-0" />
-        <div className="bottom-modal absolute z-50 left-0 right-0 bottom-0 bg-white rounded rounded-b-none p-4">
-          {children}
-        </div>
-      </>
-    ),
-    document.body,
-  );
-}
+const BottomModal = ({ isVisible, children }) => isVisible && ReactDOM.createPortal(
+  (
+    <>
+      <div className="modal-bg absolute bg-black z-40 left-0 right-0 bottom-0 top-0" />
+      <div className="bottom-modal absolute z-50 left-0 right-0 bottom-0 bg-white rounded rounded-b-none p-4">
+        {children}
+      </div>
+    </>
+  ),
+  document.body,
+);
 
 BottomModal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   children: PropTypes.number.isRequired,
-}
+};
 
-export default BottomModal
+export default BottomModal;

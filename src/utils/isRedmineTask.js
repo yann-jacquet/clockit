@@ -1,3 +1,3 @@
-export default function(taskToTest) {
+export default function (taskToTest) {
   return taskToTest.id && true;
 }

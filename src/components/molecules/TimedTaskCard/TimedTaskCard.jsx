@@ -4,7 +4,9 @@ import PropTypes from 'prop-types';
 // Style
 import './TimedTaskCard.css';
 
-const TimedTaskCard = ({ isNonIdTask, children, onLinkIDClick, onDeleteClick }) => (
+const TimedTaskCard = ({
+  isNonIdTask, children, onLinkIDClick, onDeleteClick,
+}) => (
   <li className={`
     timed-task-card relative text-gray-700 bg-white flex flex-row items-center py-2 px-3 border-b-2 first:border-t-2 last:border-b-0 border-gray-200 hover:shadow
     ${isNonIdTask ? ' bg-blue-100' : ''}`}

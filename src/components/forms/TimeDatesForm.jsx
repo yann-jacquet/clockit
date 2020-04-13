@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { parseISO, isAfter } from 'date-fns';
 
-const TimeDatesForm = ({ initValues, handleBlur, timeTrackingId, isNonIdTask }) => {
+const TimeDatesForm = ({
+  initValues, handleBlur, timeTrackingId, isNonIdTask,
+}) => {
   const [values, setValues] = useState(initValues);
   const [errors, setErrors] = useState('');
 

@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 const TimerCard = ({
-  onInputBlur, onSwitchClick, trackingMode, task, disabled, disableSwitch, error, children, showSwitch, hasShadow
+  onInputBlur, onSwitchClick, trackingMode, task, disabled, disableSwitch, error, children, showSwitch, hasShadow,
 }) => (
-    <div className={`w-full ${hasShadow ? 'shadow' : ''} bg-white py-2 px-3 flex flex-row items-center sticky top-0`}>
-      <div className="pr-2 flex-grow flex flex-col text-gray-700">
-        <div htmlFor="taskId" className="flex flex-row text-gray-700 text-sm font-bold">
-          {
+  <div className={`w-full ${hasShadow ? 'shadow' : ''} bg-white py-2 px-3 flex flex-row items-center sticky top-0`}>
+    <div className="pr-2 flex-grow flex flex-col text-gray-700">
+      <div htmlFor="taskId" className="flex flex-row text-gray-700 text-sm font-bold">
+        {
             showSwitch
               ? (
                 <button
@@ -24,51 +24,51 @@ const TimerCard = ({
               : null
           }
 
-          {trackingMode === 'withId'
-            ? (
-              <input
-                className="flex-grow appearance-none text-gray-700 leading-tight focus:outline-none"
-                type="text"
-                placeholder="Task id"
-                name="taskId"
-                onBlur={onInputBlur}
-                disabled={disabled}
-                defaultValue={task ? task.id : undefined}
-              />
-            )
-            : (
-              <input
-                className="flex-grow appearance-none text-gray-700 leading-tight focus:outline-none"
-                type="text"
-                placeholder="Name your task"
-                id="taskName"
-                name="taskName"
-                onBlur={onInputBlur}
-                disabled={disabled}
-                defaultValue={task ? task.subject : undefined}
-              />
-            )}
-        </div>
-        {error
-          ? <span className="text-red-500">{error}</span>
-          : null}
-        {task && trackingMode === 'withId'
+        {trackingMode === 'withId'
           ? (
-            <>
-              <span className="font-bold">{task.subject}</span>
-              <span className="italic text-sm">{task.project.name}</span>
-              <span className="italic text-sm">
-                {task.assigned_to ? `Assignee : ${task.assigned_to.name}` : 'Nobody Assigned'}
-              </span>
-            </>
+            <input
+              className="flex-grow appearance-none text-gray-700 leading-tight focus:outline-none"
+              type="text"
+              placeholder="Task id"
+              name="taskId"
+              onBlur={onInputBlur}
+              disabled={disabled}
+              defaultValue={task ? task.id : undefined}
+            />
           )
-          : null}
+          : (
+            <input
+              className="flex-grow appearance-none text-gray-700 leading-tight focus:outline-none"
+              type="text"
+              placeholder="Name your task"
+              id="taskName"
+              name="taskName"
+              onBlur={onInputBlur}
+              disabled={disabled}
+              defaultValue={task ? task.subject : undefined}
+            />
+          )}
       </div>
-      <div className="flex-shrink-0">
-        {children}
-      </div>
+      {error
+        ? <span className="text-red-500">{error}</span>
+        : null}
+      {task && trackingMode === 'withId'
+        ? (
+          <>
+            <span className="font-bold">{task.subject}</span>
+            <span className="italic text-sm">{task.project.name}</span>
+            <span className="italic text-sm">
+              {task.assigned_to ? `Assignee : ${task.assigned_to.name}` : 'Nobody Assigned'}
+            </span>
+          </>
+        )
+        : null}
     </div>
-  );
+    <div className="flex-shrink-0">
+      {children}
+    </div>
+  </div>
+);
 
 TimerCard.propTypes = {
   onInputBlur: PropTypes.func.isRequired,
