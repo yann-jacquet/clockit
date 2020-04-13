@@ -7,6 +7,7 @@ import Timer from '../components/molecules/Timer';
 import TimeDatesForm from '../components/forms/TimeDatesForm';
 import TimedTaskCard from '../components/molecules/TimedTaskCard';
 import DayCard from '../components/organisms/DayCard';
+import BottomModal from '../components/organisms/BottomModal/BottomModal';
 
 // Hooks
 import useRedmineApi from '../hooks/Api/useRedmineApi';
@@ -20,6 +21,7 @@ import isRedmineTask from '../utils/isRedmineTask';
 import TaskCardContent from '../components/molecules/TaskCardContent/TaskCardContent';
 
 const TasksList = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [pendingTask, setPendingTask] = useState(null);
   const [trackingMode, setTrackingMode] = useState('withId'); // withId || withName
   const [unsyncTasks, setUnsyncTasks] = useState([]);
@@ -176,7 +178,7 @@ const TasksList = () => {
       >
         <ul>
           {sortedTasksByDate[tasksDay].tasksByDay.map(unsyncTask => (
-            <TimedTaskCard key={unsyncTask.timeTracking.id} isNonIdTask={!isRedmineTask(unsyncTask)}>
+            <TimedTaskCard key={unsyncTask.timeTracking.id} isNonIdTask={!isRedmineTask(unsyncTask)} onLinkIDClick={() => setIsModalVisible(true)}>
               <TaskCardContent
                 isNonIdTask={!isRedmineTask(unsyncTask)}
                 task={unsyncTask}
@@ -235,6 +237,11 @@ const TasksList = () => {
             Start your day with a task
           </div>
         )}
+
+      <BottomModal isVisible={isModalVisible}>
+        Hello I am a modal
+        <button onClick={() => setIsModalVisible(false)}>Close</button>
+      </BottomModal>
     </div>
   );
 };

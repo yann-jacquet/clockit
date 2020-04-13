@@ -1,0 +1,21 @@
+.modal-bg {
+  opacity: 0;
+  animation: 0.2s ease-in forwards;
+  animation-name: fadein;
+}
+
+.bottom-modal {
+  opacity: 0;
+  animation: 0.2s 0.2s ease-in forwards;
+  animation-name: slidein;
+}
+
+@keyframes slidein {
+  from { opacity: 0; transform: translateY(100%); }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 0.25; }
+}
