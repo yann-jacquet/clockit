@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 
 const useApi = (options = { trigger: false }) => {
   const { trigger } = options;
   const [requestState, setRequestState] = useState(
-    trigger ? 'loading' : 'completed',
+    trigger ? "loading" : "completed"
   );
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState(null);
 
   const responseHandler = (res) => {
     if (res.data) setPayload(res.data);
-    setRequestState('completed');
+    setRequestState("completed");
 
     return res;
   };
@@ -20,22 +20,22 @@ const useApi = (options = { trigger: false }) => {
     if (resError.response) {
       switch (resError.response.status) {
         case 400:
-          return setError('400 - Contenu inexistant');
+          return setError("400 - Contenu inexistant");
         case 404:
-          return setError('404 - Contenu introuvable');
+          return setError("404 - Contenu introuvable");
         case 403:
           return setError(
-            "403 - Votre authentification a expirée ou vous n'êtes pas authorisé à accéder à ce contenu",
+            "403 - Votre authentification a expirée ou vous n'êtes pas authorisé à accéder à ce contenu"
           );
         case 412:
           return setError("412 - Le format attendu n'est pas correct");
         case 500:
-          return setError('500 - Erreur réseau');
+          return setError("500 - Erreur réseau");
         default:
-          return setError('000 - Une erreur est survenue');
+          return setError("000 - Une erreur est survenue");
       }
     }
-    setRequestState('error');
+    setRequestState("error");
     return resError;
   };
 
@@ -43,10 +43,10 @@ const useApi = (options = { trigger: false }) => {
     method,
     url,
     data,
-    reqOptions = { silentLoad: false, axiosOptions: {} },
+    reqOptions = { silentLoad: false, axiosOptions: {} }
   ) => {
     setError(null);
-    if (!reqOptions.silentLoad) setRequestState('loading');
+    if (!reqOptions.silentLoad) setRequestState("loading");
 
     return axios({
       ...reqOptions.axiosOptions,

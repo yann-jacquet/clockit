@@ -24,9 +24,10 @@ import TaskCardContent from '../components/molecules/TaskCardContent/TaskCardCon
 const TasksList = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pendingTask, setPendingTask] = useState(null);
-  const [unlinkedPairing, setUnlinkedPairing] = useState(
-    { unlinkedTimeTrackingID: null, taskToLink: null },
-  );
+  const [unlinkedPairing, setUnlinkedPairing] = useState({
+    unlinkedTimeTrackingID: null,
+    taskToLink: null,
+  });
   const [trackingMode, setTrackingMode] = useState('withId'); // withId || withName
   const [unsyncTasks, setUnsyncTasks] = useState([]);
   const [getLocalFile, setLocalFile] = useFileSystem({
@@ -39,7 +40,12 @@ const TasksList = () => {
   const {
     timerState, startTimer, stopTimer, getTimerTimestamps,
   } = useTimer();
-  const [taskRequestState, taskPayload, taskError, { getTask }] = useRedmineApi();
+  const [
+    taskRequestState,
+    taskPayload,
+    taskError,
+    { getTask },
+  ] = useRedmineApi();
   const [, , , { postTimeEntry }] = useRedmineApi();
 
   useEffect(() => {
@@ -94,11 +100,12 @@ const TasksList = () => {
   const handleOnModalConfirmClick = () => {
     if (unlinkedPairing.taskToLink) {
       // Replace task with timetrackingID to redmine task
-      const newUnsyncTasks = unsyncTasks.map((task) => (
-        task.timeTracking.id === unlinkedPairing.unlinkedTimeTrackingID
-          ? { ...unlinkedPairing.taskToLink, timeTracking: { ...task.timeTracking } }
-          : task
-      ));
+      const newUnsyncTasks = unsyncTasks.map((task) => (task.timeTracking.id === unlinkedPairing.unlinkedTimeTrackingID
+        ? {
+          ...unlinkedPairing.taskToLink,
+          timeTracking: { ...task.timeTracking },
+        }
+        : task));
 
       setLocalFile('unsyncTasks', newUnsyncTasks);
       setUnsyncTasks(newUnsyncTasks);
@@ -108,7 +115,10 @@ const TasksList = () => {
   };
 
   const handleonLinkIDClick = (timeTrackingId) => {
-    setUnlinkedPairing({ ...unlinkedPairing, unlinkedTimeTrackingID: timeTrackingId });
+    setUnlinkedPairing({
+      ...unlinkedPairing,
+      unlinkedTimeTrackingID: timeTrackingId,
+    });
     setIsModalVisible(true);
   };
 
@@ -130,10 +140,7 @@ const TasksList = () => {
       {
         ...pendingTask,
         timeTracking: {
-          id:
-            Math.random()
-              .toString(36)
-              .substring(2, 15) + Math.random(),
+          id: Math.random().toString(36).substring(2, 15) + Math.random(),
           startTimestamp: getTimerTimestamps().start,
           endTimestamp: Date.now(),
         },
@@ -148,7 +155,9 @@ const TasksList = () => {
   };
 
   const handleDeleteClick = (idToDelete) => {
-    const newUnsyncTasks = unsyncTasks.filter((task) => task.timeTracking.id !== idToDelete);
+    const newUnsyncTasks = unsyncTasks.filter(
+      (task) => task.timeTracking.id !== idToDelete,
+    );
 
     setLocalFile('unsyncTasks', newUnsyncTasks);
     setUnsyncTasks(newUnsyncTasks);
@@ -170,10 +179,9 @@ const TasksList = () => {
 
     Promise.all(requests).then(() => {
       // Clean sync tasks from array
-      const stillWaitingToSync = unsyncTasks.filter((task) => (
-        !succeededSyncIds.includes(task.id)
-        || !isRedmineTask(task)
-      ));
+      const stillWaitingToSync = unsyncTasks.filter(
+        (task) => !succeededSyncIds.includes(task.id) || !isRedmineTask(task),
+      );
 
       setUnsyncTasks(stillWaitingToSync);
       setLocalFile('unsyncTasks', stillWaitingToSync);
@@ -188,8 +196,12 @@ const TasksList = () => {
 
     const updatedUnsyncTasks = unsyncTasks.map((unsyncTask) => {
       const isEndAfterStart = isAfter(
-        side === 'endTimestamp' ? newTimestamp : unsyncTask.timeTracking.endTimestamp,
-        side === 'startTimestamp' ? newTimestamp : unsyncTask.timeTracking.startTimestamp,
+        side === 'endTimestamp'
+          ? newTimestamp
+          : unsyncTask.timeTracking.endTimestamp,
+        side === 'startTimestamp'
+          ? newTimestamp
+          : unsyncTask.timeTracking.startTimestamp,
       );
       if (unsyncTask.timeTracking.id === taskTimmerId && isEndAfterStart) {
         return {
@@ -222,16 +234,20 @@ const TasksList = () => {
       <DayCard
         key={tasksDay}
         title={format(parseInt(tasksDay, 10), 'EEEE dd MMMM')}
-        dayTotalTracked={formatTimestamp(sortedTasksByDate[tasksDay].totalTracked)}
+        dayTotalTracked={formatTimestamp(
+          sortedTasksByDate[tasksDay].totalTracked,
+        )}
       >
         <ul>
           {sortedTasksByDate[tasksDay].tasksByDay.map((unsyncTask) => (
             <TimedTaskCard
               key={unsyncTask.timeTracking.id}
               isNonIdTask={!isRedmineTask(unsyncTask)}
-              onLinkIDClick={!unsyncTask.id
-                ? () => handleonLinkIDClick(unsyncTask.timeTracking.id)
-                : undefined}
+              onLinkIDClick={
+                !unsyncTask.id
+                  ? () => handleonLinkIDClick(unsyncTask.timeTracking.id)
+                  : undefined
+              }
               onDeleteClick={() => handleDeleteClick(unsyncTask.timeTracking.id)}
             >
               <TaskCardContent
@@ -251,17 +267,22 @@ const TasksList = () => {
       <TimerCard
         onInputBlur={handleTimerCardInputBlur}
         task={pendingTask}
-        disabled={taskRequestState === 'loading' || (trackingMode === 'withId' && timerState === 'running')}
+        disabled={
+          taskRequestState === 'loading'
+          || (trackingMode === 'withId' && timerState === 'running')
+        }
         error={
           !isModalVisible
-          && (
-            taskError
-            || (taskPayload && taskPayload.total_count === 0 ? 'No task found with this id' : null)
-          )
+          && (taskError
+            || (taskPayload && taskPayload.total_count === 0
+              ? 'No task found with this id'
+              : null))
         }
         trackingMode={trackingMode}
         onSwitchClick={handleSwitchClick}
-        disableSwitch={taskRequestState === 'loading' || timerState === 'running'}
+        disableSwitch={
+          taskRequestState === 'loading' || timerState === 'running'
+        }
       >
         <Timer
           timerState={timerState}
@@ -272,43 +293,44 @@ const TasksList = () => {
         />
       </TimerCard>
 
-      {unsyncTasks && unsyncTasks.length > 0
-        ? (
-          <div className="px-2">
-            <ul>{buildDayCardList()}</ul>
+      {unsyncTasks && unsyncTasks.length > 0 ? (
+        <div className="px-2">
+          <ul>{buildDayCardList()}</ul>
 
-            {unsyncTasks.filter((task) => isRedmineTask(task)).length > 0
-              ? (
-                <button
-                  className={`
+          {unsyncTasks.filter((task) => isRedmineTask(task)).length > 0 ? (
+            <button
+              className={`
               mt-2 w-full bg-teal-300 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-teal-500 hover:border-teal-300
               `}
-                  type="button"
-                  onClick={handleOnSyncClick}
-                >
-                  {`Sync ${unsyncTasks.filter((task) => isRedmineTask(task)).length} tasks`}
-                </button>
-              )
-              : null}
-          </div>
-        )
-        : (
-          <div className="mt-4 text-gray-500 w-full text-center italic">
-            Start your day with a task
-          </div>
-        )}
+              type="button"
+              onClick={handleOnSyncClick}
+            >
+              {`Sync ${
+                unsyncTasks.filter((task) => isRedmineTask(task)).length
+              } tasks`}
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <div className="mt-4 text-gray-500 w-full text-center italic">
+          Start your day with a task
+        </div>
+      )}
 
       <BottomModal isVisible={isModalVisible}>
         <TimerCard
           onInputBlur={handleLinkInputBlur}
           task={unlinkedPairing.taskToLink}
-          disabled={taskRequestState === 'loading' || (trackingMode === 'withId' && timerState === 'running')}
+          disabled={
+            taskRequestState === 'loading'
+            || (trackingMode === 'withId' && timerState === 'running')
+          }
           error={
             isModalVisible
-            && (
-              taskError
-              || (taskPayload && taskPayload.total_count === 0 ? 'No task found with this id' : null)
-            )
+            && (taskError
+              || (taskPayload && taskPayload.total_count === 0
+                ? 'No task found with this id'
+                : null))
           }
           showSwitch={false}
           hasShadow={false}

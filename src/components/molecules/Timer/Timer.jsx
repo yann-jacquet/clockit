@@ -1,22 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 // Utils
-import formatTimestamp from '../../../utils/formatTimestamp';
+import formatTimestamp from "../../../utils/formatTimestamp";
 
 const Timer = ({
-  handleStart, handleStop, startTimestamp, disabled, timerState,
+  handleStart,
+  handleStop,
+  startTimestamp,
+  disabled,
+  timerState,
 }) => {
-  const [timerString, setTimerString] = useState('');
+  const [timerString, setTimerString] = useState("");
 
   useEffect(() => {
     let interval = null;
-    if (timerState === 'running') {
+    if (timerState === "running") {
       interval = setInterval(() => {
         const timeDifference = Date.now() - startTimestamp;
         setTimerString(formatTimestamp(timeDifference));
       }, 1000);
-    } else setTimerString('');
+    } else setTimerString("");
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -24,33 +28,31 @@ const Timer = ({
 
   return (
     <div>
-      {timerState === 'stopped'
-        ? (
-          <button
-            className={`
+      {timerState === "stopped" ? (
+        <button
+          className={`
               w-24 text-sm bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-green-700 hover:border-green-500
-              ${disabled ? ' opacity-50 cursor-not-allowed' : ''}
+              ${disabled ? " opacity-50 cursor-not-allowed" : ""}
             `}
-            type="button"
-            onClick={handleStart}
-            disabled={disabled}
-          >
-            Start
-          </button>
-        )
-        : (
-          <button
-            className={`
+          type="button"
+          onClick={handleStart}
+          disabled={disabled}
+        >
+          Start
+        </button>
+      ) : (
+        <button
+          className={`
               w-24 text-sm bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline border-b-4 border-red-700 hover:border-red-500
-              ${disabled ? ' opacity-50 cursor-not-allowed' : ''}
+              ${disabled ? " opacity-50 cursor-not-allowed" : ""}
             `}
-            type="button"
-            onClick={handleStop}
-            disabled={disabled}
-          >
-            {timerString || '00:00:00'}
-          </button>
-        )}
+          type="button"
+          onClick={handleStop}
+          disabled={disabled}
+        >
+          {timerString || "00:00:00"}
+        </button>
+      )}
     </div>
   );
 };
@@ -60,7 +62,7 @@ Timer.propTypes = {
   handleStart: PropTypes.func.isRequired,
   handleStop: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
-  timerState: PropTypes.oneOf(['running', 'stopped']),
+  timerState: PropTypes.oneOf(["running", "stopped"]),
 };
 
 Timer.defaultProps = {

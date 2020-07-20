@@ -1,13 +1,13 @@
+const formatTimeNumber = (numberToFormat) =>
+  numberToFormat < 10 ? `0${numberToFormat}` : numberToFormat;
+
 export default function (duration) {
-  // const duration = Date.now() - startTimestamp;
   const seconds = Math.floor((duration / 1000) % 60);
   const minutes = Math.floor((duration / (1000 * 60)) % 60);
   const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-  const formated = {
-    hours: (hours < 10) ? `0${hours}` : hours,
-    minutes: (minutes < 10) ? `0${minutes}` : minutes,
-    seconds: (seconds < 10) ? `0${seconds}` : seconds,
-  };
+  const days = Math.floor(duration / (1000 * 86400));
 
-  return `${formated.hours}:${formated.minutes}:${formated.seconds}`;
+  return `${formatTimeNumber(hours + days * 24)}:${formatTimeNumber(
+    minutes
+  )}:${formatTimeNumber(seconds)}`;
 }
